@@ -26,6 +26,8 @@ void onRestart(CRules@ this)
 		drawPile.PushCard(Card(i, drawPile.position));
 	}
 
+	drawPile.Shuffle();
+
 	for (uint i = 0; i < getPlayerCount(); i++)
 	{
 		CPlayer@ player = getPlayer(i);

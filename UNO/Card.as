@@ -1,6 +1,6 @@
 shared class Card
 {
-	private float easing = 0.08f;
+	private float easing = 0.07f;
 
 	u16 index;
 

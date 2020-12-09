@@ -75,13 +75,15 @@ void onTick(CRules@ this)
 
 void onRender(CRules@ this)
 {
+	Vec2f screenDim = getDriver().getScreenDimensions();
+	GUI::DrawRectangle(Vec2f(0, 0), screenDim, SColor(255, 36, 115, 69));
+
 	if (ready)
 	{
 		drawPile.Render();
 		discardPile.Render();
 	}
 
-	Vec2f screenDim = getDriver().getScreenDimensions();
 	hand.Render(screenDim.y - 100);
 
 	uint index = 0;
@@ -94,7 +96,7 @@ void onRender(CRules@ this)
 		Hand@ tempHand;
 		if (!player.get("hand", @tempHand)) continue;
 
-		tempHand.Render(100 + index * 60);
+		tempHand.Render(100 + index * 40);
 
 		index++;
 	}

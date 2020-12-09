@@ -43,17 +43,31 @@ shared class Hand
 
 	void Render(float y)
 	{
+		Vec2f mousePos = getControls().getInterpMouseScreenPos();
 		Vec2f screenDim = getDriver().getScreenDimensions();
 		uint n = cards.size();
 
-		for (uint i = 0; i < n; i++)
+		bool hover = false;
+
+		for (int i = n - 1; i >= 0; i--)
 		{
 			Card@ card = cards[i];
 
-			float x = (i - (n - 1) / 2.0f) * 60;
-			card.targetPosition = Vec2f(screenDim.x / 2 + x, y);
+			float hoverOffset = 0;
+			if (!hover && player.isMyPlayer() && card.contains(mousePos))
+			{
+				hoverOffset -= 30;
+				hover = true;
+			}
 
-			card.Render();
+			float x = (i - (n - 1) / 2.0f) * 40;
+
+			card.targetPosition = Vec2f(screenDim.x / 2 + x, y + hoverOffset);
+		}
+
+		for (uint i = 0; i < n; i++)
+		{
+			cards[i].Render();
 		}
 	}
 
