@@ -18,7 +18,7 @@ shared class Stack
 		position.x = bs.read_f32();
 		position.y = bs.read_f32();
 
-		uint n = bs.read_u16();
+		u16 n = bs.read_u16();
 		for (uint i = 0; i < n; i++)
 		{
 			PushCard(Card(position));

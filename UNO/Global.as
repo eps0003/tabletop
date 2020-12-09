@@ -1,4 +1,5 @@
 #include "Stack.as"
+#include "Hand.as"
 
 void onInit(CRules@ this)
 {
@@ -29,8 +30,11 @@ void onCommand(CRules@ this, u8 cmd, CBitStream@ params)
 		CPlayer@ player = getPlayerByNetworkId(id);
 		if (player is null) return;
 
+		Hand@ hand;
+		if (!player.get("hand", @hand)) return;
+
 		Card@ card = drawPile.popCard();
-		discardPile.PushCard(card);
+		hand.PushCard(card);
 	}
 	else if (cmd == this.getCommandID("c_discard"))
 	{
@@ -40,11 +44,14 @@ void onCommand(CRules@ this, u8 cmd, CBitStream@ params)
 		CPlayer@ player = getPlayerByNetworkId(id);
 		if (player is null) return;
 
+		Hand@ hand;
+		if (!player.get("hand", @hand)) return;
+
 		uint index;
 		if (!params.saferead_u16(index)) return;
 
-		// Card@ card = hand.takeCard(index);
-		// discardPile.PushCard(card);
+		Card@ card = hand.takeCard(index);
+		discardPile.PushCard(card);
 	}
 	else if (cmd == this.getCommandID("c_shuffle_draw_pile"))
 	{

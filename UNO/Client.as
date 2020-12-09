@@ -81,7 +81,23 @@ void onRender(CRules@ this)
 		discardPile.Render();
 	}
 
-	hand.Render();
+	Vec2f screenDim = getDriver().getScreenDimensions();
+	hand.Render(screenDim.y - 100);
+
+	uint index = 0;
+
+	for (uint i = 0; i < getPlayerCount(); i++)
+	{
+		CPlayer@ player = getPlayer(i);
+		if (player is null || player.isMyPlayer()) continue;
+
+		Hand@ tempHand;
+		if (!player.get("hand", @tempHand)) continue;
+
+		tempHand.Render(100 + index * 60);
+
+		index++;
+	}
 }
 
 void onCommand(CRules@ this, u8 cmd, CBitStream@ params)
@@ -93,6 +109,19 @@ void onCommand(CRules@ this, u8 cmd, CBitStream@ params)
 
 		this.set("draw_pile", @drawPile);
 		this.set("discard_pile", @discardPile);
+
+		u16 n = params.read_u16();
+
+		for (uint i = 0; i < n; i++)
+		{
+			Hand@ tempHand = Hand(params);
+			tempHand.player.set("hand", @tempHand);
+
+			if (tempHand.player.isMyPlayer())
+			{
+				@hand = tempHand;
+			}
+		}
 
 		ready = true;
 	}
