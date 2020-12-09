@@ -40,6 +40,8 @@ void onCommand(CRules@ this, u8 cmd, CBitStream@ params)
 		for (uint i = 0; i < count; i++)
 		{
 			Card@ card = drawPile.popCard();
+			if (card is null) break;
+
 			hand.PushCard(card);
 			card.Flip();
 		}
