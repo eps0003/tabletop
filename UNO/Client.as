@@ -26,46 +26,67 @@ void onTick(CRules@ this)
 	CControls@ controls = getControls();
 	Vec2f mousePos = controls.getMouseScreenPos();
 
+	Card@ topDrawCard = drawPile.getTopCard();
+	bool mouseOnTopDrawCard = topDrawCard !is null && topDrawCard.contains(mousePos);
+
+	Card@ topDiscardCard = discardPile.getTopCard();
+	bool mouseOnTopDiscardCard = topDiscardCard !is null && topDiscardCard.contains(mousePos);
+
 	if (controls.isKeyJustPressed(KEY_LBUTTON))
 	{
+		//draw cards from draw pile
+		if (mouseOnTopDrawCard)
 		{
-			Card@ card = drawPile.getTopCard();
-			if (card !is null && card.contains(mousePos))
-			{
-				CBitStream bs;
-				bs.write_u16(getLocalPlayer().getNetworkID());
-				this.SendCommand(this.getCommandID("c_draw"), bs, true);
-			}
+			CBitStream bs;
+			bs.write_u16(getLocalPlayer().getNetworkID());
+			bs.write_u8(1);
+			this.SendCommand(this.getCommandID("c_draw"), bs, true);
 		}
 
+		//click on card in hand to put card on discard pile
+		for (int i = hand.cards.size() - 1; i >= 0; i--)
 		{
-			for (int i = hand.cards.size() - 1; i >= 0; i--)
-			{
-				Card@ card = hand.cards[i];
+			Card@ card = hand.cards[i];
+			if (!card.contains(mousePos)) continue;
 
-				if (card.contains(mousePos))
-				{
-					CBitStream bs;
-					bs.write_u16(getLocalPlayer().getNetworkID());
-					bs.write_u16(i);
-					this.SendCommand(this.getCommandID("c_discard"), bs, true);
+			CBitStream bs;
+			bs.write_u16(getLocalPlayer().getNetworkID());
+			bs.write_u16(i);
+			this.SendCommand(this.getCommandID("c_discard"), bs, true);
 
-					break;
-				}
-			}
+			break;
 		}
 	}
 
+	//deal cards using number keys
+	for (uint key = KEY_KEY_1; key <= KEY_KEY_9; key++)
+	{
+		if (mouseOnTopDrawCard && controls.isKeyJustPressed(key))
+		{
+			CBitStream bs;
+			bs.write_u16(getLocalPlayer().getNetworkID());
+			bs.write_u8(key - KEY_KEY_0);
+			this.SendCommand(this.getCommandID("c_draw"), bs, true);
+		}
+	}
+
+	//shuffle the draw pile
 	if (controls.isKeyJustPressed(KEY_KEY_S))
 	{
-		Card@ card = drawPile.getTopCard();
-		if (card !is null && card.contains(mousePos))
+		if (mouseOnTopDrawCard)
 		{
 			CBitStream bs;
 			this.SendCommand(this.getCommandID("c_shuffle_draw_pile"), bs, true);
 		}
+
+		if (mouseOnTopDiscardCard)
+		{
+			CBitStream bs;
+			this.SendCommand(this.getCommandID("c_restock_draw_pile"), bs, true);
+		}
 	}
 
+	//reset keybind (FOR DEBUGGING)
 	if (controls.isKeyJustPressed(KEY_KEY_R))
 	{
 		CBitStream bs;
