@@ -50,8 +50,9 @@ void onCommand(CRules@ this, u8 cmd, CBitStream@ params)
 		uint index;
 		if (!params.saferead_u16(index)) return;
 
-		Card@ card = hand.takeCard(index);
-		discardPile.PushCard(card);
+		// Card@ card = hand.takeCard(index);
+		// discardPile.PushCard(card);
+		hand.cards[index].Flip();
 	}
 	else if (cmd == this.getCommandID("c_shuffle_draw_pile"))
 	{
