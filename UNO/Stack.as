@@ -14,7 +14,10 @@ shared class Stack
 
 	void PushCard(Card@ card)
 	{
-		cards.push_back(card);
+		if (card !is null)
+		{
+			cards.push_back(card);
+		}
 	}
 
 	Card@ popCard()
@@ -34,9 +37,14 @@ shared class Stack
 		for (int i = cards.size() - 1; i > 0; i--)
 		{
 			uint j = rand.NextRanged(i + 1);
-			Card@ temp = cards[i];
-			cards[i] = cards[j];
-			cards[j] = temp;
+
+			Card@ tempCard = cards[i];
+			@cards[i] = cards[j];
+			@cards[j] = tempCard;
+
+			Vec2f tempPos = cards[i].position;
+			cards[i].position = cards[j].position;
+			cards[j].position = tempPos;
 		}
 	}
 
@@ -45,7 +53,7 @@ shared class Stack
 		for (uint i = 0; i < cards.size(); i++)
 		{
 			Card@ card = cards[i];
-			card.targetPosition = position - Vec2f(0, i);
+			card.targetPosition = position - Vec2f(0, i / 2.0f);
 			card.Render();
 		}
 	}

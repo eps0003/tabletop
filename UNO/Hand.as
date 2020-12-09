@@ -9,14 +9,23 @@ shared class Hand
 
 	}
 
-	void AddCard(Card@ card)
+	void PushCard(Card@ card)
 	{
-		cards.push_back(card);
+		if (card !is null)
+		{
+			cards.push_back(card);
+		}
 	}
 
 	Card@ takeCard(uint index)
 	{
-		return (index < cards.size()) ? cards[index] : null;
+		Card@ card;
+		if (index < cards.size())
+		{
+			@card = cards[index];
+			cards.removeAt(index);
+		}
+		return card;
 	}
 
 	void Render()
