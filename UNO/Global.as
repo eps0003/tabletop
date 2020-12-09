@@ -35,6 +35,12 @@ void onCommand(CRules@ this, u8 cmd, CBitStream@ params)
 
 		Card@ card = drawPile.popCard();
 		hand.PushCard(card);
+		card.Flip();
+
+		if (isClient())
+		{
+			Sound::Play("cardSlide" + (XORRandom(3) + 1) + ".ogg");
+		}
 	}
 	else if (cmd == this.getCommandID("c_discard"))
 	{
@@ -50,12 +56,21 @@ void onCommand(CRules@ this, u8 cmd, CBitStream@ params)
 		uint index;
 		if (!params.saferead_u16(index)) return;
 
-		// Card@ card = hand.takeCard(index);
-		// discardPile.PushCard(card);
-		hand.cards[index].Flip();
+		Card@ card = hand.takeCard(index);
+		discardPile.PushCard(card);
+
+		if (isClient())
+		{
+			Sound::Play("cardPlace2.ogg");
+		}
 	}
 	else if (cmd == this.getCommandID("c_shuffle_draw_pile"))
 	{
 		drawPile.Shuffle();
+
+		if (isClient())
+		{
+			Sound::Play("cardSlide" + (XORRandom(3) + 1) + ".ogg");
+		}
 	}
 }

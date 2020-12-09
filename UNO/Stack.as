@@ -21,7 +21,8 @@ shared class Stack
 		u16 n = bs.read_u16();
 		for (uint i = 0; i < n; i++)
 		{
-			PushCard(Card(position));
+			u16 index = bs.read_u16();
+			PushCard(Card(index, position));
 		}
 	}
 
@@ -85,6 +86,13 @@ shared class Stack
 	{
 		bs.write_f32(position.x);
 		bs.write_f32(position.y);
-		bs.write_u16(cards.size());
+
+		uint n = cards.size();
+		bs.write_u16(n);
+
+		for (uint i = 0; i < n; i++)
+		{
+			cards[i].Serialize(bs);
+		}
 	}
 }

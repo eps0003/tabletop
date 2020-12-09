@@ -17,7 +17,8 @@ shared class Hand
 		u16 n = bs.read_u16();
 		for (uint i = 0; i < n; i++)
 		{
-			PushCard(Card(Vec2f_zero));
+			u16 index = bs.read_u16();
+			PushCard(Card(index, Vec2f_zero));
 		}
 	}
 
@@ -59,6 +60,13 @@ shared class Hand
 	void Serialize(CBitStream@ bs)
 	{
 		bs.write_u16(player.getNetworkID());
-		bs.write_u16(cards.size());
+
+		uint n = cards.size();
+		bs.write_u16(n);
+
+		for (uint i = 0; i < n; i++)
+		{
+			cards[i].Serialize(bs);
+		}
 	}
 }

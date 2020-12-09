@@ -1,6 +1,8 @@
 shared class Card
 {
-	private float easing = 0.05f;
+	private float easing = 0.08f;
+
+	u16 index;
 
 	Vec2f position;
 	Vec2f targetPosition;
@@ -11,20 +13,22 @@ shared class Card
 	float flip;
 	bool flipped;
 
-	SColor color;
+	Vec2f dim(140, 190);
 
-	Vec2f dim(100, 160);
-
-	Card(Vec2f position, float rotation = 0, bool flipped = false)
+	Card(u16 index, Vec2f position, float rotation = 0, bool flipped = false)
 	{
+		this.index = index;
 		this.position = position;
 		this.targetPosition = position;
 		this.rotation = rotation;
 		this.targetRotation = rotation;
 		this.flipped = flipped;
 		this.flip = flipped ? 1 : 0;
+	}
 
-		this.color = SColor(255, XORRandom(256), XORRandom(256), XORRandom(256));
+	Card(CBitStream@ bs)
+	{
+		index = bs.read_u16();
 	}
 
 	private void EaseIntoPosition()
@@ -54,9 +58,19 @@ shared class Card
 	{
 		EaseIntoPosition();
 
+		float xScale = Maths::Abs(flip - 0.5f) * 2;
+
 		Vec2f halfDim = dim / 2;
-		halfDim.x *= Maths::Abs(flip - 0.5f) * 2;
-		SColor c = flip < 0.5f ? color : SColor(255, 100, 100, 100);
-		GUI::DrawRectangle(position - halfDim, position + halfDim, c);
+		halfDim.x *= xScale;
+
+		string sprite = flip > 0.5f ? "playingCards.png" : "playingCardBacks.png";
+		u16 i = flip > 0.5f ? index : 0;
+
+		GUI::DrawIcon(sprite, i, dim, position - halfDim, 0.5f * xScale, 0.5f, color_white);
+	}
+
+	void Serialize(CBitStream@ bs)
+	{
+		bs.write_u16(index);
 	}
 }

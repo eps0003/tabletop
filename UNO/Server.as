@@ -21,12 +21,10 @@ void onRestart(CRules@ this)
 	this.set("draw_pile", @drawPile);
 	this.set("discard_pile", @discardPile);
 
-	for (uint i = 0; i < 107; i++)
+	for (uint i = 0; i < 52; i++)
 	{
-		drawPile.PushCard(Card(drawPile.position));
+		drawPile.PushCard(Card(i, drawPile.position));
 	}
-
-	discardPile.PushCard(Card(drawPile.position));
 
 	for (uint i = 0; i < getPlayerCount(); i++)
 	{
