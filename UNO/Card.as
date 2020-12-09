@@ -27,6 +27,17 @@ shared class Card
 		position += (targetPosition - position) * easing;
 	}
 
+	bool contains(Vec2f point)
+	{
+		Vec2f halfDim = dim / 2;
+		return (
+			point.x >= position.x - halfDim.x &&
+			point.x <= position.x + halfDim.x &&
+			point.y >= position.y - halfDim.y &&
+			point.y <= position.y + halfDim.y
+		);
+	}
+
 	void Render()
 	{
 		EaseIntoPosition();

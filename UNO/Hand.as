@@ -2,7 +2,7 @@
 
 shared class Hand
 {
-	private Card@[] cards;
+	Card@[] cards;
 
 	Hand(CPlayer@ player)
 	{

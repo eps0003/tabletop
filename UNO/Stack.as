@@ -4,7 +4,8 @@ shared class Stack
 {
 	Vec2f position;
 
-	private Card@[] cards;
+	Card@[] cards;
+
 	private Random rand(Time());
 
 	Stack(Vec2f position)
@@ -23,12 +24,22 @@ shared class Stack
 	Card@ popCard()
 	{
 		Card@ card;
-		if (!cards.isEmpty())
+		if (!isEmpty())
 		{
 			@card = cards[cards.size() - 1];
 			cards.removeLast();
 		}
 		return card;
+	}
+
+	Card@ getTopCard()
+	{
+		return !isEmpty() ? cards[cards.size() - 1] : null;
+	}
+
+	bool isEmpty()
+	{
+		return cards.isEmpty();
 	}
 
 	void Shuffle()
