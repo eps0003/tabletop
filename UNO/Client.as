@@ -91,35 +91,9 @@ void onCommand(CRules@ this, u8 cmd, CBitStream@ params)
 		@drawPile = Stack(params);
 		@discardPile = Stack(params);
 
+		this.set("draw_pile", @drawPile);
+		this.set("discard_pile", @discardPile);
+
 		ready = true;
-	}
-	else if (cmd == this.getCommandID("c_draw"))
-	{
-		u16 id;
-		if (!params.saferead_u16(id)) return;
-
-		CPlayer@ player = getPlayerByNetworkId(id);
-		if (player is null) return;
-
-		Card@ card = drawPile.popCard();
-		discardPile.PushCard(card);
-	}
-	else if (cmd == this.getCommandID("c_discard"))
-	{
-		u16 id;
-		if (!params.saferead_u16(id)) return;
-
-		CPlayer@ player = getPlayerByNetworkId(id);
-		if (player is null) return;
-
-		uint index;
-		if (!params.saferead_u16(index)) return;
-
-		Card@ card = hand.takeCard(index);
-		discardPile.PushCard(card);
-	}
-	else if (cmd == this.getCommandID("c_shuffle_draw_pile"))
-	{
-		drawPile.Shuffle();
 	}
 }
