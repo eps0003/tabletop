@@ -13,6 +13,18 @@ shared class Stack
 		this.position = position;
 	}
 
+	Stack(CBitStream@ bs)
+	{
+		position.x = bs.read_f32();
+		position.y = bs.read_f32();
+
+		uint n = bs.read_u16();
+		for (uint i = 0; i < n; i++)
+		{
+			PushCard(Card(position));
+		}
+	}
+
 	void PushCard(Card@ card)
 	{
 		if (card !is null)
@@ -67,5 +79,12 @@ shared class Stack
 			card.targetPosition = position - Vec2f(0, i / 2.0f);
 			card.Render();
 		}
+	}
+
+	void Serialize(CBitStream@ bs)
+	{
+		bs.write_f32(position.x);
+		bs.write_f32(position.y);
+		bs.write_u16(cards.size());
 	}
 }

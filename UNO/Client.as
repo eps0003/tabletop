@@ -3,32 +3,25 @@
 
 #define CLIENT_ONLY
 
+bool ready;
 Stack@ drawPile;
 Stack@ discardPile;
 Hand@ hand;
 
 void onInit(CRules@ this)
 {
-	onRestart();
+	onRestart(this);
 }
 
-void onRestart()
+void onRestart(CRules@ this)
 {
-	Vec2f screenCenter = getDriver().getScreenCenterPos();
-
-	@drawPile = Stack(screenCenter - Vec2f(100, 0));
-	@discardPile = Stack(screenCenter + Vec2f(100, 0));
+	ready = false;
 	@hand = Hand(getLocalPlayer());
-
-	for (uint i = 0; i < 108; i++)
-	{
-		drawPile.PushCard(Card(drawPile.position));
-	}
 }
 
 void onTick(CRules@ this)
 {
-	if (getLocalPlayer() is null) return;
+	if (getLocalPlayer() is null || !ready) return;
 
 	CControls@ controls = getControls();
 	Vec2f mousePos = controls.getMouseScreenPos();
@@ -82,14 +75,25 @@ void onTick(CRules@ this)
 
 void onRender(CRules@ this)
 {
-	drawPile.Render();
-	discardPile.Render();
+	if (ready)
+	{
+		drawPile.Render();
+		discardPile.Render();
+	}
+
 	hand.Render();
 }
 
 void onCommand(CRules@ this, u8 cmd, CBitStream@ params)
 {
-	if (cmd == this.getCommandID("c_draw"))
+	if (cmd == this.getCommandID("s_sync"))
+	{
+		@drawPile = Stack(params);
+		@discardPile = Stack(params);
+
+		ready = true;
+	}
+	else if (cmd == this.getCommandID("c_draw"))
 	{
 		u16 id;
 		if (!params.saferead_u16(id)) return;
@@ -98,7 +102,7 @@ void onCommand(CRules@ this, u8 cmd, CBitStream@ params)
 		if (player is null) return;
 
 		Card@ card = drawPile.popCard();
-		hand.PushCard(card);
+		discardPile.PushCard(card);
 	}
 	else if (cmd == this.getCommandID("c_discard"))
 	{

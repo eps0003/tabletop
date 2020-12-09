@@ -1,5 +1,6 @@
 void onInit(CRules@ this)
 {
+	this.addCommandID("s_sync");
 	this.addCommandID("c_draw");
 	this.addCommandID("c_discard");
 	this.addCommandID("c_shuffle_draw_pile");
