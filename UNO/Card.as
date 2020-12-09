@@ -1,12 +1,14 @@
 shared class Card
 {
-	private float easing = 0.1f;
+	private float easing = 0.05f;
 
 	Vec2f position;
 	Vec2f targetPosition;
 
 	float rotation;
 	float targetRotation;
+
+	SColor color;
 
 	Vec2f dim(100, 160);
 
@@ -16,6 +18,8 @@ shared class Card
 		this.targetPosition = position;
 		this.rotation = rotation;
 		this.targetRotation = rotation;
+
+		this.color = SColor(255, XORRandom(256), XORRandom(256), XORRandom(256));
 	}
 
 	private void EaseIntoPosition()
@@ -28,6 +32,6 @@ shared class Card
 		EaseIntoPosition();
 
 		Vec2f halfDim = dim / 2;
-		GUI::DrawRectangle(position - halfDim, position + halfDim, color_white);
+		GUI::DrawRectangle(position - halfDim, position + halfDim, color);
 	}
 }

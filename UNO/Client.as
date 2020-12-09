@@ -1,13 +1,23 @@
 #include "Stack.as"
+#include "Hand.as"
 
 #define CLIENT_ONLY
 
 Stack@ stack;
+Hand@ hand;
 
 void onInit(CRules@ this)
 {
 	@stack = Stack(Vec2f(400, 400));
-	stack.PushCard(Card(stack.position));
+	@hand = Hand(getLocalPlayer());
+	hand.AddCard(Card(stack.position));
+	hand.AddCard(Card(stack.position));
+	hand.AddCard(Card(stack.position));
+	hand.AddCard(Card(stack.position));
+	hand.AddCard(Card(stack.position));
+	hand.AddCard(Card(stack.position));
+	hand.AddCard(Card(stack.position));
+	hand.AddCard(Card(stack.position));
 }
 
 void onTick(CRules@ this)
@@ -24,6 +34,7 @@ void onTick(CRules@ this)
 void onRender(CRules@ this)
 {
 	stack.Render();
+	hand.Render();
 }
 
 void onCommand(CRules@ this, u8 cmd, CBitStream@ params)
