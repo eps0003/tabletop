@@ -111,4 +111,24 @@ void onCommand(CRules@ this, u8 cmd, CBitStream@ params)
 			Sound::Play("cardSlide" + (XORRandom(3) + 1) + ".ogg");
 		}
 	}
+	else if (cmd == this.getCommandID("c_organise_hand"))
+	{
+		u16 id;
+		if (!params.saferead_u16(id)) return;
+
+		CPlayer@ player = getPlayerByNetworkId(id);
+		if (player is null || player.isMyPlayer()) return;
+
+		u16 oldIndex;
+		if (!params.saferead_u16(oldIndex)) return;
+
+		u16 newIndex;
+		if (!params.saferead_u16(newIndex)) return;
+
+		Hand@ hand;
+		if (!player.get("hand", @hand)) return;
+
+		Card@ card = hand.takeCard(oldIndex);
+		hand.InsertCard(newIndex, card);
+	}
 }

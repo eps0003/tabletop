@@ -58,8 +58,10 @@ void onTick(CRules@ this)
 
 			if (grabCard.position.x < card.position.x)
 			{
+				uint newIndex = Maths::Max(0, i);
 				@grabCard = hand.takeCard(index);
-				hand.InsertCard(Maths::Max(0, i), grabCard);
+				hand.InsertCard(newIndex, grabCard);
+				SyncOrdaniseHand(index, newIndex);
 				break;
 			}
 		}
@@ -74,6 +76,7 @@ void onTick(CRules@ this)
 			{
 				@grabCard = hand.takeCard(index);
 				hand.InsertCard(i, grabCard);
+				SyncOrdaniseHand(index, i);
 				break;
 			}
 		}
@@ -250,4 +253,18 @@ void onCommand(CRules@ this, u8 cmd, CBitStream@ params)
 		Hand@ tempHand = Hand(params);
 		tempHand.player.set("hand", @tempHand);
 	}
+}
+
+void SyncOrdaniseHand(uint oldIndex, uint newIndex)
+{
+	CRules@ rules = getRules();
+
+	CPlayer@ player = getLocalPlayer();
+	if (player is null) return;
+
+	CBitStream bs;
+	bs.write_u16(player.getNetworkID());
+	bs.write_u16(oldIndex);
+	bs.write_u16(newIndex);
+	rules.SendCommand(rules.getCommandID("c_organise_hand"), bs, true);
 }
