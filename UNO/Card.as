@@ -49,6 +49,8 @@ shared class Card
 		position += (targetPosition - position) * easing;
 
 		flip += (flipped ? 1 - flip : -flip) * easing;
+
+		rotation += (targetRotation - rotation) * easing;
 	}
 
 	bool contains(Vec2f point)
@@ -79,10 +81,32 @@ shared class Card
 		string sprite = flip > 0.5f ? "playingCards.png" : "playingCardBacks.png";
 		u16 i = flip > 0.5f ? index : 0;
 
-		// string sprite = "explodingKittensCards.png";
-		// u16 i = flip > 0.5f ? index : 69;
+		// // string sprite = "explodingKittensCards.png";
+		// // u16 i = flip > 0.5f ? index : 69;
 
-		GUI::DrawIcon(sprite, i, dim, position - halfDim, scale * xScale / 2.0f, scale / 2.0f, color_white);
+		Vec2f imageDim;
+		GUI::GetImageDimensions(sprite, imageDim);
+
+		float w = imageDim.x / dim.x;
+		float h = imageDim.y / dim.y;
+
+		Vec2f u(i % int(w) / w, i / int(w) / h);
+		Vec2f v = u + Vec2f(1.0f / w, 1.0f / h);
+
+		Vertex[] vertices = {
+			Vertex( halfDim.x, -halfDim.y, 0, v.x, u.y, color_white),
+			Vertex( halfDim.x,  halfDim.y, 0, v.x, v.y, color_white),
+			Vertex(-halfDim.x,  halfDim.y, 0, u.x, v.y, color_white),
+			Vertex(-halfDim.x, -halfDim.y, 0, u.x, u.y, color_white)
+		};
+
+		float[] matrix;
+		Matrix::MakeIdentity(matrix);
+		Matrix::SetTranslation(matrix, position.x, position.y, 0);
+		Matrix::SetRotationDegrees(matrix, 0, 0, rotation);
+		Render::SetModelTransform(matrix);
+
+		Render::RawQuads(sprite, vertices);
 	}
 
 	void Serialize(CBitStream@ bs)

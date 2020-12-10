@@ -10,6 +10,7 @@ Hand@ hand;
 
 void onInit(CRules@ this)
 {
+	Render::addScript(Render::layer_prehud, "Client.as", "Render", 0);
 	onRestart(this);
 }
 
@@ -96,8 +97,20 @@ void onTick(CRules@ this)
 
 void onRender(CRules@ this)
 {
+
+}
+
+void Render(int id)
+{
+	//background colour
 	Vec2f screenDim = getDriver().getScreenDimensions();
 	GUI::DrawRectangle(Vec2f(0, 0), screenDim, SColor(255, 36, 115, 69));
+
+	Render::SetAlphaBlend(false);
+	Render::SetZBuffer(true, true);
+	Render::SetBackfaceCull(true);
+	Render::ClearZ();
+	Render::SetTransformScreenspace();
 
 	if (ready)
 	{
