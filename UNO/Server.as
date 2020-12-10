@@ -28,6 +28,10 @@ void onRestart(CRules@ this)
 
 	drawPile.Shuffle();
 
+	Card@ card = drawPile.popCard();
+	card.Flip();
+	discardPile.PushCard(card);
+
 	for (uint i = 0; i < getPlayerCount(); i++)
 	{
 		CPlayer@ player = getPlayer(i);
