@@ -29,6 +29,13 @@ shared class Card
 	Card(CBitStream@ bs)
 	{
 		index = bs.read_u16();
+		position.x = bs.read_f32();
+		position.y = bs.read_f32();
+		targetPosition = position;
+		rotation = bs.read_f32();
+		targetRotation = rotation;
+		flipped = bs.read_bool();
+		flip = flipped ? 1 : 0;
 	}
 
 	private void EaseIntoPosition()
@@ -72,5 +79,9 @@ shared class Card
 	void Serialize(CBitStream@ bs)
 	{
 		bs.write_u16(index);
+		bs.write_f32(position.x);
+		bs.write_f32(position.y);
+		bs.write_f32(rotation);
+		bs.write_bool(flipped);
 	}
 }

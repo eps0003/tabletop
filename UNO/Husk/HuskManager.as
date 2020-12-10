@@ -33,7 +33,6 @@ void CreateHusk(CPlayer@ player)
 	if (blob !is null)
 	{
 		blob.server_SetPlayer(player);
-		print("Created husk for " + player.getUsername());
 	}
 }
 
@@ -43,6 +42,5 @@ void RemoveHusk(CPlayer@ player)
 	if (blob !is null)
 	{
 		blob.server_Die();
-		print("Removed husk for " + player.getUsername());
 	}
 }

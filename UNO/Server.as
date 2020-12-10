@@ -43,14 +43,41 @@ void onTick(CRules@ this)
 	//SendCmd rules scripts not initialised for cmd 420
 	if (getGameTime() == 1)
 	{
-		Sync(this);
+		CBitStream bs;
+		drawPile.Serialize(bs);
+		discardPile.Serialize(bs);
+		SerializeHands(bs);
+		this.SendCommand(this.getCommandID("s_sync_all"), bs, true);
 	}
 }
 
 void onNewPlayerJoin(CRules@ this, CPlayer@ player)
 {
-	player.set("hand", Hand(player));
-	Sync(this);
+	Hand@ hand = Hand(player);
+	player.set("hand", @hand);
+
+	CBitStream bsAll;
+	drawPile.Serialize(bsAll);
+	discardPile.Serialize(bsAll);
+	SerializeHands(bsAll);
+
+	CBitStream bsHand;
+	hand.Serialize(bsHand);
+
+	for (uint i = 0; i < getPlayerCount(); i++)
+	{
+		CPlayer@ tempPlayer = getPlayer(i);
+		if (tempPlayer is null) continue;
+
+		if (tempPlayer is player)
+		{
+			this.SendCommand(this.getCommandID("s_sync_all"), bsAll, tempPlayer);
+		}
+		else
+		{
+			this.SendCommand(this.getCommandID("s_sync_hand"), bsHand, tempPlayer);
+		}
+	}
 }
 
 void onCommand(CRules@ this, u8 cmd, CBitStream@ params)
@@ -61,14 +88,8 @@ void onCommand(CRules@ this, u8 cmd, CBitStream@ params)
 	}
 }
 
-void Sync(CRules@ this)
+void SerializeHands(CBitStream@ bs)
 {
-	CBitStream bs;
-
-	//serialize piles
-	drawPile.Serialize(bs);
-	discardPile.Serialize(bs);
-
 	//collect all hands into an array
 	Hand@[] hands;
 
@@ -91,6 +112,4 @@ void Sync(CRules@ this)
 	{
 		hands[i].Serialize(bs);
 	}
-
-	this.SendCommand(this.getCommandID("s_sync"), bs, true);
 }

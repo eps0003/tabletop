@@ -3,7 +3,8 @@
 
 void onInit(CRules@ this)
 {
-	this.addCommandID("s_sync");
+	this.addCommandID("s_sync_all");
+	this.addCommandID("s_sync_hand");
 	this.addCommandID("c_draw");
 	this.addCommandID("c_discard");
 	this.addCommandID("c_shuffle_draw_pile");
@@ -84,6 +85,8 @@ void onCommand(CRules@ this, u8 cmd, CBitStream@ params)
 	}
 	else if (cmd == this.getCommandID("c_restock_draw_pile"))
 	{
+		if (discardPile.cards.size() < 2) return;
+
 		//grab the top card on the discard pile
 		Card@ topCard = discardPile.popCard();
 

@@ -12,13 +12,13 @@ shared class Hand
 
 	Hand(CBitStream@ bs)
 	{
-		@player = getPlayerByNetworkId(bs.read_u16());
+		u16 id = bs.read_u16();
+		@player = getPlayerByNetworkId(id);
 
 		u16 n = bs.read_u16();
 		for (uint i = 0; i < n; i++)
 		{
-			u16 index = bs.read_u16();
-			PushCard(Card(index, Vec2f_zero));
+			PushCard(Card(bs));
 		}
 	}
 

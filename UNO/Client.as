@@ -125,7 +125,7 @@ void onRender(CRules@ this)
 
 void onCommand(CRules@ this, u8 cmd, CBitStream@ params)
 {
-	if (cmd == this.getCommandID("s_sync"))
+	if (cmd == this.getCommandID("s_sync_all"))
 	{
 		@drawPile = Stack(params);
 		@discardPile = Stack(params);
@@ -147,5 +147,10 @@ void onCommand(CRules@ this, u8 cmd, CBitStream@ params)
 		}
 
 		ready = true;
+	}
+	else if (cmd == this.getCommandID("s_sync_hand"))
+	{
+		Hand@ tempHand = Hand(params);
+		tempHand.player.set("hand", @tempHand);
 	}
 }
