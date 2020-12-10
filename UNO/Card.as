@@ -1,3 +1,5 @@
+#include "Grab.as"
+
 shared class Card
 {
 	private float easing = 0.07f;
@@ -12,6 +14,9 @@ shared class Card
 
 	float flip;
 	bool flipped;
+
+	bool grabbing = false;
+	Vec2f offset;
 
 	//standard playing cards
 	Vec2f dim(140, 190);
@@ -46,7 +51,18 @@ shared class Card
 
 	private void EaseIntoPosition()
 	{
-		position += (targetPosition - position) * easing;
+		CRules@ rules = getRules();
+
+		if (isGrabbing(this))
+		{
+			Vec2f mousePos = getControls().getInterpMouseScreenPos();
+			Vec2f offset = rules.get_Vec2f("grab_offset");
+			position = mousePos - offset;
+		}
+		else
+		{
+			position += (targetPosition - position) * easing;
+		}
 
 		flip += (flipped ? 1 - flip : -flip) * easing;
 

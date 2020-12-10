@@ -1,5 +1,6 @@
 #include "Stack.as"
 #include "Hand.as"
+#include "Drag.as"
 
 void onInit(CRules@ this)
 {
@@ -41,7 +42,7 @@ void onCommand(CRules@ this, u8 cmd, CBitStream@ params)
 		for (uint i = 0; i < count; i++)
 		{
 			Card@ card = drawPile.popCard();
-			if (card is null) break;
+			if (card is null) return;
 
 			hand.PushCard(card);
 			card.Flip();

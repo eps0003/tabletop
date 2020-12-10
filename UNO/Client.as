@@ -1,5 +1,6 @@
 #include "Stack.as"
 #include "Hand.as"
+#include "Drag.as"
 
 #define CLIENT_ONLY
 
@@ -33,7 +34,51 @@ void onTick(CRules@ this)
 	Card@ topDiscardCard = discardPile.getTopCard();
 	bool mouseOnTopDiscardCard = topDiscardCard !is null && topDiscardCard.contains(mousePos);
 
-	if (controls.isKeyJustPressed(KEY_LBUTTON))
+	Card@ grabCard = getGrabbed();
+	if (grabCard !is null)
+	{
+		uint index;
+
+		//find index of grabbed card
+		for (uint i = 0; i < hand.cards.size(); i++)
+		{
+			Card@ card = hand.cards[i];
+			if (card is grabCard)
+			{
+				index = i;
+				break;
+			}
+		}
+
+		//move to left
+		for (uint i = 0; i < index; i++)
+		{
+			Card@ card = hand.cards[i];
+			if (card is grabCard) break;
+
+			if (grabCard.position.x < card.position.x)
+			{
+				@grabCard = hand.takeCard(index);
+				hand.InsertCard(Maths::Max(0, i), grabCard);
+				break;
+			}
+		}
+
+		//move to right
+		for (int i = hand.cards.size() - 1; i > index; i--)
+		{
+			Card@ card = hand.cards[i];
+			if (card is grabCard) break;
+
+			if (grabCard.position.x > card.position.x)
+			{
+				@grabCard = hand.takeCard(index);
+				hand.InsertCard(i, grabCard);
+				break;
+			}
+		}
+	}
+	else if (controls.isKeyJustPressed(controls.getActionKeyKey(AK_ACTION1)))
 	{
 		//draw cards from draw pile
 		if (mouseOnTopDrawCard)
@@ -58,6 +103,50 @@ void onTick(CRules@ this)
 			break;
 		}
 	}
+	else if (controls.isKeyJustPressed(controls.getActionKeyKey(AK_ACTION2)))
+	{
+		//rearrange cards in hand
+		for (int i = hand.cards.size() - 1; i >= 0; i--)
+		{
+			Card@ card = hand.cards[i];
+			if (!card.contains(mousePos)) continue;
+
+			Grab(card);
+
+			break;
+		}
+	}
+
+	if (!controls.isKeyPressed(controls.getActionKeyKey(AK_ACTION2)))
+	{
+		Drop();
+	}
+
+	// s8 dir = 0;
+	// if (controls.isKeyJustPressed(KEY_LEFT)) dir -= 1;
+	// if (controls.isKeyJustPressed(KEY_RIGHT)) dir += 1;
+	// if (controls.isKeyJustPressed(controls.getActionKeyKey(AK_MOVE_LEFT))) dir -= 1;
+	// if (controls.isKeyJustPressed(controls.getActionKeyKey(AK_MOVE_RIGHT))) dir += 1;
+	// if (controls.mouseScrollUp) dir -= 1;
+	// if (controls.mouseScrollDown) dir += 1;
+
+	// if (dir != 0)
+	// {
+	// 	//rearrange cards in hand
+	// 	for (int i = hand.cards.size() - 1; i >= 0; i--)
+	// 	{
+	// 		Card@ card = hand.cards[i];
+	// 		if (!card.contains(mousePos)) continue;
+
+	// 		if (i == 0 && dir < 0) break;
+	// 		if (i == hand.cards.size() - 1 && dir > 0) break;
+
+	// 		@card = hand.takeCard(i);
+	// 		hand.InsertCard(i + dir, card);
+
+	// 		break;
+	// 	}
+	// }
 
 	//deal cards using number keys
 	for (uint key = KEY_KEY_1; key <= KEY_KEY_9; key++)
@@ -95,18 +184,13 @@ void onTick(CRules@ this)
 	}
 }
 
-void onRender(CRules@ this)
-{
-
-}
-
 void Render(int id)
 {
 	//background colour
 	Vec2f screenDim = getDriver().getScreenDimensions();
 	GUI::DrawRectangle(Vec2f(0, 0), screenDim, SColor(255, 36, 115, 69));
 
-	Render::SetAlphaBlend(false);
+	Render::SetAlphaBlend(true);
 	Render::SetZBuffer(true, true);
 	Render::SetBackfaceCull(true);
 	Render::ClearZ();
@@ -114,8 +198,8 @@ void Render(int id)
 
 	if (ready)
 	{
-		drawPile.Render();
 		discardPile.Render();
+		drawPile.Render();
 	}
 
 	hand.Render(screenDim.y - 100);

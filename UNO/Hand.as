@@ -1,4 +1,5 @@
 #include "Card.as"
+#include "Drag.as"
 
 shared class Hand
 {
@@ -30,6 +31,14 @@ shared class Hand
 		}
 	}
 
+	void InsertCard(uint index, Card@ card)
+	{
+		if (card !is null && index <= cards.size())
+		{
+			cards.insertAt(index, card);
+		}
+	}
+
 	Card@ takeCard(uint index)
 	{
 		Card@ card;
@@ -54,7 +63,7 @@ shared class Hand
 			Card@ card = cards[i];
 
 			float hoverOffset = 0;
-			if (!hover && player.isMyPlayer() && card.contains(mousePos))
+			if (!hover && player.isMyPlayer() && card.contains(mousePos) && (!isGrabbing() || isGrabbing(card)))
 			{
 				hoverOffset -= 30;
 				hover = true;
