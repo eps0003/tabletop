@@ -2,6 +2,8 @@
 #include "Hand.as"
 #include "Drag.as"
 
+Random rand(Time());
+
 void onInit(CRules@ this)
 {
 	this.addCommandID("s_sync_all");
@@ -68,6 +70,7 @@ void onCommand(CRules@ this, u8 cmd, CBitStream@ params)
 		if (!params.saferead_u16(index)) return;
 
 		Card@ card = hand.takeCard(index);
+		card.targetRotation = rand.NextFloat() * 20 - 10;
 		discardPile.PushCard(card);
 
 		if (isClient())
@@ -96,6 +99,7 @@ void onCommand(CRules@ this, u8 cmd, CBitStream@ params)
 		{
 			Card@ card = discardPile.cards[i];
 			card.flipped = false;
+			card.targetRotation = 0;
 			drawPile.PushCard(card);
 		}
 

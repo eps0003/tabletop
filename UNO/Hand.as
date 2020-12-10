@@ -69,9 +69,10 @@ shared class Hand
 				hover = true;
 			}
 
-			float x = (i - (n - 1) / 2.0f) * 40;
+			float x = i - (n - 1) / 2.0f;
 
-			card.targetPosition = Vec2f(screenDim.x / 2 + x, y + hoverOffset);
+			card.targetPosition = Vec2f(screenDim.x / 2 + x * 40, y + hoverOffset + Maths::Abs(Maths::Sin(x / 20.0f)) * 200);
+			card.targetRotation = x * 2;
 		}
 
 		for (uint i = 0; i < n; i++)
