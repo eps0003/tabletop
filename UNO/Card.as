@@ -13,7 +13,13 @@ shared class Card
 	float flip;
 	bool flipped;
 
+	//standard playing cards
 	Vec2f dim(140, 190);
+	float scale = 1.0f;
+
+	// //exploding kittens
+	// Vec2f dim(409, 585);
+	// float scale = 0.3f;
 
 	Card(u16 index, Vec2f position, float rotation = 0, bool flipped = false)
 	{
@@ -47,7 +53,7 @@ shared class Card
 
 	bool contains(Vec2f point)
 	{
-		Vec2f halfDim = dim / 2;
+		Vec2f halfDim = dim / 2 * scale;
 		return (
 			point.x >= position.x - halfDim.x &&
 			point.x <= position.x + halfDim.x &&
@@ -67,13 +73,16 @@ shared class Card
 
 		float xScale = Maths::Abs(flip - 0.5f) * 2;
 
-		Vec2f halfDim = dim / 2;
+		Vec2f halfDim = dim / 2.0f * scale;
 		halfDim.x *= xScale;
 
 		string sprite = flip > 0.5f ? "playingCards.png" : "playingCardBacks.png";
 		u16 i = flip > 0.5f ? index : 0;
 
-		GUI::DrawIcon(sprite, i, dim, position - halfDim, 0.5f * xScale, 0.5f, color_white);
+		// string sprite = "explodingKittensCards.png";
+		// u16 i = flip > 0.5f ? index : 69;
+
+		GUI::DrawIcon(sprite, i, dim, position - halfDim, scale * xScale / 2.0f, scale / 2.0f, color_white);
 	}
 
 	void Serialize(CBitStream@ bs)

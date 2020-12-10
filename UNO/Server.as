@@ -21,7 +21,8 @@ void onRestart(CRules@ this)
 	this.set("draw_pile", @drawPile);
 	this.set("discard_pile", @discardPile);
 
-	for (uint i = 0; i < 52; i++)
+	// for (uint i = 0; i < 41; i++) //exploding kittens
+	for (uint i = 0; i < 52; i++) //standard playing cards
 	{
 		drawPile.PushCard(Card(i, drawPile.position));
 	}
