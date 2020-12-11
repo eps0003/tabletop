@@ -1,5 +1,6 @@
 #include "Grab.as"
 #include "Deck.as"
+#include "Utilities.as"
 
 class Card
 {
@@ -61,7 +62,7 @@ class Card
 
 		flip += (flipped ? 1 - flip : -flip) * easing;
 
-		rotation += (targetRotation - rotation) * easing;
+		rotation += angleDifference(targetRotation, rotation) * easing;
 	}
 
 	bool contains(Vec2f point)
