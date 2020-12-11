@@ -1,5 +1,17 @@
 #include "Card.as"
-#include "Drag.as"
+#include "Grab.as"
+
+Hand@ getHand(CPlayer@ player)
+{
+	Hand@ hand;
+	player.get("hand", @hand);
+	return hand;
+}
+
+void SetHand(CPlayer@ player, Hand@ hand)
+{
+	player.set("hand", @hand);
+}
 
 shared class Hand
 {
@@ -63,7 +75,7 @@ shared class Hand
 			Card@ card = cards[i];
 
 			float hoverOffset = 0;
-			if (!hover && player.isMyPlayer() && card.contains(mousePos) && (!isGrabbing() || isGrabbing(card)))
+			if (!hover && player.isMyPlayer() && card.contains(mousePos) && (!Grab::isGrabbing() || Grab::isGrabbing(card)))
 			{
 				hoverOffset -= 30;
 				hover = true;

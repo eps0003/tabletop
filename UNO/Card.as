@@ -15,9 +15,6 @@ shared class Card
 	float flip;
 	bool flipped;
 
-	bool grabbing = false;
-	Vec2f offset;
-
 	//standard playing cards
 	Vec2f dim(140, 190);
 	float scale = 1.0f;
@@ -53,7 +50,7 @@ shared class Card
 	{
 		CRules@ rules = getRules();
 
-		if (isGrabbing(this))
+		if (Grab::isGrabbing(this))
 		{
 			Vec2f mousePos = getControls().getInterpMouseScreenPos();
 			Vec2f offset = rules.get_Vec2f("grab_offset");
