@@ -33,8 +33,8 @@ void onCommand(CRules@ this, u8 cmd, CBitStream@ params)
 		CPlayer@ player = getPlayerByNetworkId(id);
 		if (player is null) return;
 
-		Hand@ hand;
-		if (!player.get("hand", @hand)) return;
+		Hand@ hand = Hand::getHand(player);
+		if (hand is null) return;
 
 		u8 count;
 		if (!params.saferead_u8(count)) return;
@@ -61,8 +61,8 @@ void onCommand(CRules@ this, u8 cmd, CBitStream@ params)
 		CPlayer@ player = getPlayerByNetworkId(id);
 		if (player is null) return;
 
-		Hand@ hand;
-		if (!player.get("hand", @hand)) return;
+		Hand@ hand = Hand::getHand(player);
+		if (hand is null) return;
 
 		uint index;
 		if (!params.saferead_u16(index)) return;
@@ -127,8 +127,8 @@ void onCommand(CRules@ this, u8 cmd, CBitStream@ params)
 		u16 newIndex;
 		if (!params.saferead_u16(newIndex)) return;
 
-		Hand@ hand;
-		if (!player.get("hand", @hand)) return;
+		Hand@ hand = Hand::getHand(player);
+		if (hand is null) return;
 
 		Card@ card = hand.takeCard(oldIndex);
 		hand.InsertCard(newIndex, card);

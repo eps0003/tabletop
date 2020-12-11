@@ -37,7 +37,7 @@ void onTick(CRules@ this)
 void onNewPlayerJoin(CRules@ this, CPlayer@ player)
 {
 	Hand@ hand = Hand(player);
-	player.set("hand", @hand);
+	Hand::SetHand(player, hand);
 
 	CBitStream bsAll;
 	Stack::Serialize(bsAll);
@@ -77,7 +77,7 @@ void InitHands()
 		CPlayer@ player = getPlayer(i);
 		if (player is null) continue;
 
-		player.set("hand", Hand(player));
+		Hand::SetHand(player, Hand(player));
 	}
 }
 
@@ -91,8 +91,8 @@ void SerializeHands(CBitStream@ bs)
 		CPlayer@ player = getPlayer(i);
 		if (player is null) continue;
 
-		Hand@ hand;
-		if (!player.get("hand", @hand)) continue;
+		Hand@ hand = Hand::getHand(player);
+		if (hand is null) continue;
 
 		hands.push_back(hand);
 	}

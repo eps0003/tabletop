@@ -80,7 +80,7 @@ void Render(int id)
 		CPlayer@ player = getPlayer(i);
 		if (player is null || player.isMyPlayer()) continue;
 
-		Hand@ tempHand = getHand(player);
+		Hand@ tempHand = Hand::getHand(player);
 		if (tempHand is null) continue;
 
 		tempHand.Render(100 + index * 40);
@@ -105,7 +105,7 @@ void onCommand(CRules@ this, u8 cmd, CBitStream@ params)
 		for (uint i = 0; i < handCount; i++)
 		{
 			Hand@ tempHand = Hand(params);
-			SetHand(tempHand.player, tempHand);
+			Hand::SetHand(tempHand.player, tempHand);
 
 			if (tempHand.player.isMyPlayer())
 			{
@@ -118,7 +118,7 @@ void onCommand(CRules@ this, u8 cmd, CBitStream@ params)
 	else if (cmd == this.getCommandID("s_sync_hand"))
 	{
 		Hand@ hand = Hand(params);
-		hand.player.set("hand", @hand);
+		Hand::SetHand(hand.player, hand);
 	}
 }
 
