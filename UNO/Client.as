@@ -176,7 +176,14 @@ void ResetKeybind(CRules@ this)
 
 void DrawBackground(Vec2f screenDim)
 {
-	GUI::DrawRectangle(Vec2f(0, 0), screenDim, SColor(255, 36, 115, 69));
+	// GUI::DrawRectangle(Vec2f(0, 0), screenDim, SColor(255, 36, 115, 69));
+
+	GUI::DrawIcon("woodFloor.png", Vec2f_zero, 0.5f);
+	GUI::DrawIcon("woodFloor.png", Vec2f(1000, 0), 0.5f);
+	GUI::DrawIcon("woodFloor.png", Vec2f(1000, 666), 0.5f);
+	GUI::DrawIcon("woodFloor.png", Vec2f(0, 666), 0.5f);
+
+	GUI::DrawIcon("table.png", screenDim / 2.0f - Vec2f(500, 500), 0.5f);
 }
 
 void GrabCardInHand(Hand@ hand, Vec2f mousePos)
