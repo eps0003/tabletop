@@ -65,27 +65,29 @@ void Render(int id)
 	Render::ClearZ();
 	Render::SetTransformScreenspace();
 
+	//render stacks
 	Stack@[] stacks = Stack::getStacks();
 	for (uint i = 0; i < stacks.size(); i++)
 	{
 		stacks[i].Render();
 	}
 
-	hand.Render(screenDim.y - 100);
-
 	//render hands of other players
-	uint index = 0;
+	uint index = 1;
 	for (uint i = 0; i < getPlayerCount(); i++)
 	{
 		CPlayer@ player = getPlayer(i);
-		if (player is null || player.isMyPlayer()) continue;
+		if (player is null) continue;
 
 		Hand@ tempHand = Hand::getHand(player);
 		if (tempHand is null) continue;
 
-		tempHand.Render(100 + index * 40);
+		tempHand.Render(player.isMyPlayer() ? 0 : index);
 
-		index++;
+		if (!player.isMyPlayer())
+		{
+			index++;
+		}
 	}
 }
 

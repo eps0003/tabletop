@@ -65,12 +65,16 @@ class Hand
 		return card;
 	}
 
-	void Render(float y)
+	void Render(uint index)
 	{
 		Vec2f mousePos = getControls().getInterpMouseScreenPos();
 		Vec2f screenDim = getDriver().getScreenDimensions();
-		uint n = cards.size();
 
+		float angle = float(index) / getPlayerCount() * 360;
+		float len = screenDim.y / 2 - 100;
+		Vec2f position = screenDim / 2.0f + Vec2f_lengthdir(len, angle + 90);
+
+		uint n = cards.size();
 		bool hover = false;
 
 		for (int i = n - 1; i >= 0; i--)
@@ -86,8 +90,8 @@ class Hand
 
 			float x = i - (n - 1) / 2.0f;
 
-			card.targetPosition = Vec2f(screenDim.x / 2 + x * 40, y + hoverOffset + Maths::Abs(Maths::Sin(x / 20.0f)) * 200);
-			card.targetRotation = x * 2;
+			card.targetPosition = position + Vec2f(x * 40, hoverOffset + Maths::Abs(Maths::Sin(x / 20.0f)) * 200).RotateBy(angle);
+			card.targetRotation = angle + x * 2;
 		}
 
 		for (uint i = 0; i < n; i++)
