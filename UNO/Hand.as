@@ -42,6 +42,7 @@ class Hand
 	{
 		if (card !is null)
 		{
+			card.hidden = !player.isMyPlayer();
 			cards.push_back(card);
 		}
 	}
@@ -50,6 +51,7 @@ class Hand
 	{
 		if (card !is null && index <= cards.size())
 		{
+			card.hidden = !player.isMyPlayer();
 			cards.insertAt(index, card);
 		}
 	}
@@ -61,6 +63,7 @@ class Hand
 		{
 			@card = cards[index];
 			cards.removeAt(index);
+			card.hidden = false;
 		}
 		return card;
 	}

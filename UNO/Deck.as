@@ -23,7 +23,7 @@ class Deck
 		Vec2f halfDim = cardDim / 2.0f * scale;
 		halfDim.x *= Maths::Abs(card.flip - 0.5f) * 2;
 
-		u16 i = card.flip > 0.5f ? card.index : backIndex;
+		u16 i = (card.flip > 0.5f && !card.hidden) ? card.index : backIndex;
 		float x = imageDim.x / cardDim.x;
 		float y = imageDim.y / cardDim.y;
 

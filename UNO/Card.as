@@ -15,6 +15,7 @@ class Card
 
 	float flip;
 	bool flipped;
+	bool hidden = false;
 
 	Deck@ deck = Deck("playingCards.png", Vec2f(140, 190), 53);
 	// Deck@ deck = Deck("uno.png", Vec2f(164, 256), 52);
