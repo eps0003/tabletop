@@ -2,16 +2,21 @@
 #include "Hand.as"
 #include "Grab.as"
 #include "Utilities.as"
+#include "StackManager.as"
 
 #define CLIENT_ONLY
 
-Stack@ drawPile;
-Stack@ discardPile;
 Hand@ hand;
 
 void onInit(CRules@ this)
 {
 	Render::addScript(Render::layer_prehud, "Client.as", "Render", 0);
+	onRestart(this);
+}
+
+void onRestart(CRules@ this)
+{
+	Stack::Init();
 }
 
 void onTick(CRules@ this)
@@ -40,13 +45,17 @@ void Render(int id)
 
 	if (isReady())
 	{
-		discardPile.Render();
-		drawPile.Render();
+		Stack@[] stacks = Stack::getStacks();
+		for (uint i = 0; i < stacks.size(); i++)
+		{
+			stacks[i].Render();
+		}
+
 		hand.Render(screenDim.y - 100);
 	}
 
+	//render hands of other players
 	uint index = 0;
-
 	for (uint i = 0; i < getPlayerCount(); i++)
 	{
 		CPlayer@ player = getPlayer(i);
@@ -65,15 +74,16 @@ void onCommand(CRules@ this, u8 cmd, CBitStream@ params)
 {
 	if (cmd == this.getCommandID("s_sync_all"))
 	{
-		@drawPile = Stack(params);
-		@discardPile = Stack(params);
+		u16 stackCount = params.read_u16();
+		for (uint i = 0; i < stackCount; i++)
+		{
+			string name = params.read_string();
+			Stack@ stack = Stack(params);
+			Stack::AddStack(name, @stack);
+		}
 
-		this.set("draw_pile", @drawPile);
-		this.set("discard_pile", @discardPile);
-
-		u16 n = params.read_u16();
-
-		for (uint i = 0; i < n; i++)
+		u16 handCount = params.read_u16();
+		for (uint i = 0; i < handCount; i++)
 		{
 			Hand@ tempHand = Hand(params);
 			SetHand(tempHand.player, tempHand);
@@ -90,7 +100,7 @@ void onCommand(CRules@ this, u8 cmd, CBitStream@ params)
 
 void DealCardsUsingNumberKeys(CRules@ this)
 {
-	Card@ topDrawCard = drawPile.getTopCard();
+	Card@ topDrawCard = Stack::getStack("draw").getTopCard();
 	if (topDrawCard is null) return;
 
 	CControls@ controls = getControls();
@@ -113,14 +123,14 @@ void ShufflePiles(CRules@ this, Vec2f mousePos)
 	CControls@ controls = getControls();
 	if (!controls.isKeyJustPressed(KEY_KEY_S)) return;
 
-	Card@ topDrawCard = drawPile.getTopCard();
+	Card@ topDrawCard = Stack::getStack("draw").getTopCard();
 	if (topDrawCard !is null && topDrawCard.contains(mousePos))
 	{
 		CBitStream bs;
 		this.SendCommand(this.getCommandID("c_shuffle_draw_pile"), bs, true);
 	}
 
-	Card@ topDiscardCard = discardPile.getTopCard();
+	Card@ topDiscardCard = Stack::getStack("discard").getTopCard();
 	if (topDiscardCard !is null && topDiscardCard.contains(mousePos))
 	{
 		CBitStream bs;

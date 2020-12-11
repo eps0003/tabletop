@@ -1,6 +1,6 @@
 #include "Card.as"
 
-shared class Stack
+class Stack
 {
 	Vec2f position;
 

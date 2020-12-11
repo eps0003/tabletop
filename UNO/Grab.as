@@ -2,7 +2,7 @@
 
 namespace Grab
 {
-	shared void Grab(Card@ card)
+	void Grab(Card@ card)
 	{
 		CRules@ rules = getRules();
 		rules.set("grab_card", @card);
@@ -10,12 +10,12 @@ namespace Grab
 		rules.set_Vec2f("grab_offset", mousePos - card.position);
 	}
 
-	shared void Drop()
+	void Drop()
 	{
 		getRules().set("grab_card", null);
 	}
 
-	shared Card@ getGrabbed()
+	Card@ getGrabbed()
 	{
 		CRules@ rules = getRules();
 		Card@ grabCard;
@@ -23,7 +23,7 @@ namespace Grab
 		return grabCard;
 	}
 
-	shared bool isGrabbing(Card@ card)
+	bool isGrabbing(Card@ card)
 	{
 		CRules@ rules = getRules();
 		Card@ grabCard;
@@ -31,7 +31,7 @@ namespace Grab
 	}
 
 
-	shared bool isGrabbing()
+	bool isGrabbing()
 	{
 		CRules@ rules = getRules();
 		Card@ grabCard;

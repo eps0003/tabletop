@@ -1,6 +1,7 @@
 #include "Stack.as"
 #include "Hand.as"
 #include "Grab.as"
+#include "StackManager.as"
 
 Random rand(Time());
 
@@ -19,13 +20,10 @@ void onInit(CRules@ this)
 
 void onCommand(CRules@ this, u8 cmd, CBitStream@ params)
 {
-	Stack@ drawPile;
-	Stack@ discardPile;
+	Stack@ drawPile = Stack::getStack("draw");
+	Stack@ discardPile = Stack::getStack("discard");
 
-	if (!this.get("draw_pile", @drawPile) || !this.get("discard_pile", @discardPile))
-	{
-		return;
-	}
+	if (drawPile is null || discardPile is null) return;
 
 	if (cmd == this.getCommandID("c_draw"))
 	{

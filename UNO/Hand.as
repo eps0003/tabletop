@@ -13,7 +13,7 @@ void SetHand(CPlayer@ player, Hand@ hand)
 	player.set("hand", @hand);
 }
 
-shared class Hand
+class Hand
 {
 	CPlayer@ player;
 	Card@[] cards;

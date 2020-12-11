@@ -1,10 +1,8 @@
 #include "Stack.as"
 #include "Hand.as"
+#include "StackManager.as"
 
 #define SERVER_ONLY
-
-Stack@ drawPile;
-Stack@ discardPile;
 
 void onInit(CRules@ this)
 {
@@ -15,11 +13,8 @@ void onRestart(CRules@ this)
 {
 	Vec2f screenCenter = getDriver().getScreenCenterPos();
 
-	@drawPile = Stack(screenCenter - Vec2f(100, 0));
-	@discardPile = Stack(screenCenter + Vec2f(100, 0));
-
-	this.set("draw_pile", @drawPile);
-	this.set("discard_pile", @discardPile);
+	Stack@ drawPile = Stack(screenCenter - Vec2f(100, 0));
+	Stack@ discardPile = Stack(screenCenter + Vec2f(100, 0));
 
 	// for (uint i = 0; i < 41; i++) //exploding kittens
 	for (uint i = 0; i < 52; i++) //standard playing cards
@@ -33,13 +28,11 @@ void onRestart(CRules@ this)
 	card.Flip();
 	discardPile.PushCard(card);
 
-	for (uint i = 0; i < getPlayerCount(); i++)
-	{
-		CPlayer@ player = getPlayer(i);
-		if (player is null) continue;
+	Stack::Init();
+	Stack::AddStack("draw", @drawPile);
+	Stack::AddStack("discard", @discardPile);
 
-		player.set("hand", Hand(player));
-	}
+	InitHands();
 }
 
 void onTick(CRules@ this)
@@ -48,9 +41,11 @@ void onTick(CRules@ this)
 	//SendCmd rules scripts not initialised for cmd 420
 	if (getGameTime() == 1)
 	{
+		Stack@[] stacks = Stack::getStacks();
+		uint n = stacks.size();
+
 		CBitStream bs;
-		drawPile.Serialize(bs);
-		discardPile.Serialize(bs);
+		Stack::Serialize(bs);
 		SerializeHands(bs);
 		this.SendCommand(this.getCommandID("s_sync_all"), bs, true);
 	}
@@ -62,8 +57,7 @@ void onNewPlayerJoin(CRules@ this, CPlayer@ player)
 	player.set("hand", @hand);
 
 	CBitStream bsAll;
-	drawPile.Serialize(bsAll);
-	discardPile.Serialize(bsAll);
+	Stack::Serialize(bsAll);
 	SerializeHands(bsAll);
 
 	CBitStream bsHand;
@@ -90,6 +84,17 @@ void onCommand(CRules@ this, u8 cmd, CBitStream@ params)
 	if (cmd == this.getCommandID("c_reset"))
 	{
 		LoadNextMap();
+	}
+}
+
+void InitHands()
+{
+	for (uint i = 0; i < getPlayerCount(); i++)
+	{
+		CPlayer@ player = getPlayer(i);
+		if (player is null) continue;
+
+		player.set("hand", Hand(player));
 	}
 }
 

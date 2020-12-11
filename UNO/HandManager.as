@@ -1,6 +1,7 @@
 #include "Stack.as"
 #include "Hand.as"
 #include "Utilities.as"
+#include "StackManager.as"
 
 #define CLIENT_ONLY
 
@@ -137,8 +138,8 @@ void DiscardHeldCard(CRules@ this, Hand@ hand, Vec2f mousePos)
 
 void DrawCard(CRules@ this, Vec2f mousePos)
 {
-	Stack@ drawPile;
-	if (!this.get("draw_pile", @drawPile)) return;
+	Stack@ drawPile = Stack::getStack("draw");
+	if (drawPile is null) return;
 
 	//draw cards from draw pile
 	Card@ topDrawCard = drawPile.getTopCard();

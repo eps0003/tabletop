@@ -1,6 +1,6 @@
 #include "Grab.as"
 
-shared class Card
+class Card
 {
 	private float easing = 0.07f;
 
