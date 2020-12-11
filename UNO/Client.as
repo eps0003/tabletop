@@ -16,6 +16,7 @@ void onInit(CRules@ this)
 
 void onRestart(CRules@ this)
 {
+	SetReady(false);
 	Stack::Init();
 }
 
