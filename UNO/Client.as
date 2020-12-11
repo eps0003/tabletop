@@ -38,22 +38,21 @@ void Render(int id)
 	Vec2f screenDim = getDriver().getScreenDimensions();
 	DrawBackground(screenDim);
 
+	if (!isReady()) return;
+
 	Render::SetAlphaBlend(true);
 	Render::SetZBuffer(true, true);
 	Render::SetBackfaceCull(true);
 	Render::ClearZ();
 	Render::SetTransformScreenspace();
 
-	if (isReady())
+	Stack@[] stacks = Stack::getStacks();
+	for (uint i = 0; i < stacks.size(); i++)
 	{
-		Stack@[] stacks = Stack::getStacks();
-		for (uint i = 0; i < stacks.size(); i++)
-		{
-			stacks[i].Render();
-		}
-
-		hand.Render(screenDim.y - 100);
+		stacks[i].Render();
 	}
+
+	hand.Render(screenDim.y - 100);
 
 	//render hands of other players
 	uint index = 0;
