@@ -1,4 +1,5 @@
 #include "Grab.as"
+#include "Deck.as"
 
 class Card
 {
@@ -15,13 +16,9 @@ class Card
 	float flip;
 	bool flipped;
 
-	//standard playing cards
-	Vec2f dim(140, 190);
-	float scale = 1.0f;
-
-	// //exploding kittens
-	// Vec2f dim(409, 585);
-	// float scale = 0.3f;
+	Deck@ deck = Deck("playingCards.png", Vec2f(140, 190), 53);
+	// Deck@ deck = Deck("uno.png", Vec2f(164, 256), 52);
+	// Deck@ deck = Deck("explodingKittens.png", Vec2f(409, 585), 52, 0.3f);
 
 	Card(u16 index, Vec2f position, float rotation = 0, bool flipped = false)
 	{
@@ -68,7 +65,7 @@ class Card
 
 	bool contains(Vec2f point)
 	{
-		Vec2f halfDim = dim / 2 * scale;
+		Vec2f halfDim = deck.cardDim / 2 * deck.scale;
 		return (
 			point.x >= position.x - halfDim.x &&
 			point.x <= position.x + halfDim.x &&
@@ -86,40 +83,15 @@ class Card
 	{
 		EaseIntoPosition();
 
-		float xScale = Maths::Abs(flip - 0.5f) * 2;
-
-		Vec2f halfDim = dim / 2.0f * scale;
-		halfDim.x *= xScale;
-
-		string sprite = flip > 0.5f ? "playingCards.png" : "playingCardBacks.png";
-		u16 i = flip > 0.5f ? index : 0;
-
-		// // string sprite = "explodingKittensCards.png";
-		// // u16 i = flip > 0.5f ? index : 69;
-
-		Vec2f imageDim;
-		GUI::GetImageDimensions(sprite, imageDim);
-
-		float w = imageDim.x / dim.x;
-		float h = imageDim.y / dim.y;
-
-		Vec2f u(i % int(w) / w, i / int(w) / h);
-		Vec2f v = u + Vec2f(1.0f / w, 1.0f / h);
-
-		Vertex[] vertices = {
-			Vertex( halfDim.x, -halfDim.y, 0, v.x, u.y, color_white),
-			Vertex( halfDim.x,  halfDim.y, 0, v.x, v.y, color_white),
-			Vertex(-halfDim.x,  halfDim.y, 0, u.x, v.y, color_white),
-			Vertex(-halfDim.x, -halfDim.y, 0, u.x, u.y, color_white)
-		};
-
 		float[] matrix;
 		Matrix::MakeIdentity(matrix);
 		Matrix::SetTranslation(matrix, position.x, position.y, 0);
 		Matrix::SetRotationDegrees(matrix, 0, 0, rotation);
 		Render::SetModelTransform(matrix);
 
-		Render::RawQuads(sprite, vertices);
+		Vertex[] vertices = deck.getVertices(this);
+
+		Render::RawQuads(deck.sprite, vertices);
 	}
 
 	void Serialize(CBitStream@ bs)
