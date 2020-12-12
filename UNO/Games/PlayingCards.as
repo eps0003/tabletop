@@ -15,9 +15,11 @@ void onRestart(CRules@ this)
 	Stack@ drawPile = Stack("draw", screenCenter - Vec2f(100, 0));
 	Stack@ discardPile = Stack("discard", screenCenter + Vec2f(100, 0));
 
+	Deck@ deck = Deck::getDeck("cards");
+
 	for (uint i = 0; i < 52; i++)
 	{
-		drawPile.PushCard(Card(i, drawPile.position));
+		drawPile.PushCard(Card(deck, i, drawPile.position));
 	}
 
 	drawPile.Shuffle();

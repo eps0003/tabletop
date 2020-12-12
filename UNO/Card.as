@@ -1,11 +1,13 @@
 #include "Grab.as"
 #include "Deck.as"
 #include "Utilities.as"
+#include "DeckManager.as"
 
 class Card
 {
 	private float easing = 0.07f;
 
+	Deck@ deck;
 	u16 index;
 
 	Vec2f position;
@@ -18,12 +20,9 @@ class Card
 	bool flipped;
 	bool hidden = false;
 
-	Deck@ deck = Deck("playingCards.png", Vec2f(140, 190), 53);
-	// Deck@ deck = Deck("uno.png", Vec2f(164, 256), 52);
-	// Deck@ deck = Deck("explodingKittens.png", Vec2f(409, 585), 52, 0.3f);
-
-	Card(u16 index, Vec2f position, float rotation = 0, bool flipped = false)
+	Card(Deck@ deck, u16 index, Vec2f position, float rotation = 0, bool flipped = false)
 	{
+		@this.deck = deck;
 		this.index = index;
 		this.position = position;
 		this.targetPosition = position;
@@ -43,6 +42,7 @@ class Card
 		targetRotation = rotation;
 		flipped = bs.read_bool();
 		flip = flipped ? 1 : 0;
+		@deck = Deck::Deserialize(bs);
 	}
 
 	private void EaseIntoPosition()
@@ -104,5 +104,6 @@ class Card
 		bs.write_f32(position.y);
 		bs.write_f32(rotation);
 		bs.write_bool(flipped);
+		deck.Serialize(bs);
 	}
 }

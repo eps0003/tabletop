@@ -2,13 +2,15 @@
 
 class Deck
 {
+	string name;
 	string sprite;
 	Vec2f cardDim;
 	u16 backIndex;
 	float scale;
 
-	Deck(string sprite, Vec2f cardDim, u16 backIndex, float scale = 1.0f)
+	Deck(string name, string sprite, Vec2f cardDim, u16 backIndex, float scale = 1.0f)
 	{
+		this.name = name;
 		this.sprite = sprite;
 		this.cardDim = cardDim;
 		this.backIndex = backIndex;
@@ -38,5 +40,10 @@ class Deck
 		};
 
 		return vertices;
+	}
+
+	void Serialize(CBitStream@ bs)
+	{
+		bs.write_string(name);
 	}
 }

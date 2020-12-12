@@ -3,6 +3,7 @@
 #include "Grab.as"
 #include "StackManager.as"
 #include "HandManager.as"
+#include "DeckManager.as"
 
 Random rand(Time());
 
@@ -19,6 +20,10 @@ void onInit(CRules@ this)
 	this.addCommandID("c_reset");
 	this.addCommandID("c_deal");
 	this.addCommandID("c_flip_card");
+
+	Deck::AddDeck(Deck("cards", "playingCards.png", Vec2f(140, 190), 53));
+	Deck::AddDeck(Deck("uno", "uno.png", Vec2f(164, 256), 52));
+	Deck::AddDeck(Deck("exploding_kittens", "explodingKittens.png", Vec2f(409, 585), 52, 0.3f));
 }
 
 void onCommand(CRules@ this, u8 cmd, CBitStream@ params)
