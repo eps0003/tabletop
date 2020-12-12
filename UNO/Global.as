@@ -75,6 +75,8 @@ void onCommand(CRules@ this, u8 cmd, CBitStream@ params)
 		if (!params.saferead_u16(index)) return;
 
 		Card@ card = hand.takeCard(index);
+		if (card is null) return;
+
 		card.targetRotation = rand.NextFloat() * 20 - 10;
 		discardPile.PushCard(card);
 
