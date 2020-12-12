@@ -2,6 +2,7 @@
 #include "Hand.as"
 #include "Grab.as"
 #include "StackManager.as"
+#include "HandManager.as"
 
 Random rand(Time());
 

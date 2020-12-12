@@ -3,10 +3,9 @@
 #include "Grab.as"
 #include "Utilities.as"
 #include "StackManager.as"
+#include "HandManager.as"
 
 #define CLIENT_ONLY
-
-Hand@ hand;
 
 void onInit(CRules@ this)
 {
@@ -26,6 +25,8 @@ void onTick(CRules@ this)
 
 	CControls@ controls = getControls();
 	Vec2f mousePos = controls.getMouseScreenPos();
+
+	Hand@ hand = Hand::getHand(getLocalPlayer());
 
 	//controls and keybinds
 	DealCardsUsingNumberKeys(this);
@@ -96,25 +97,12 @@ void onCommand(CRules@ this, u8 cmd, CBitStream@ params)
 	if (cmd == this.getCommandID("s_sync_all"))
 	{
 		Stack::Deserialize(params);
-
-		u16 handCount = params.read_u16();
-		for (uint i = 0; i < handCount; i++)
-		{
-			Hand@ tempHand = Hand(params);
-			Hand::SetHand(tempHand.player, tempHand);
-
-			if (tempHand.player.isMyPlayer())
-			{
-				@hand = tempHand;
-			}
-		}
-
+		Hand::Deserialize(params);
 		SetReady(true);
 	}
 	else if (cmd == this.getCommandID("s_sync_hand"))
 	{
-		Hand@ hand = Hand(params);
-		Hand::SetHand(hand.player, hand);
+		Hand::AddHand(Hand(params));
 	}
 	else if (cmd == this.getCommandID("s_shuffle_stack"))
 	{

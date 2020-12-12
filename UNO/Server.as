@@ -1,6 +1,7 @@
 #include "Stack.as"
 #include "Hand.as"
 #include "StackManager.as"
+#include "HandManager.as"
 #include "GameManager.as"
 
 #define SERVER_ONLY
@@ -29,7 +30,7 @@ void onTick(CRules@ this)
 
 		CBitStream bs;
 		Stack::Serialize(bs);
-		SerializeHands(bs);
+		Hand::Serialize(bs);
 		this.SendCommand(this.getCommandID("s_sync_all"), bs, true);
 	}
 }
@@ -37,11 +38,11 @@ void onTick(CRules@ this)
 void onNewPlayerJoin(CRules@ this, CPlayer@ player)
 {
 	Hand@ hand = Hand(player);
-	Hand::SetHand(player, hand);
+	Hand::AddHand(hand);
 
 	CBitStream bsAll;
 	Stack::Serialize(bsAll);
-	SerializeHands(bsAll);
+	Hand::Serialize(bsAll);
 
 	CBitStream bsHand;
 	hand.Serialize(bsHand);
@@ -93,32 +94,6 @@ void InitHands()
 		CPlayer@ player = getPlayer(i);
 		if (player is null) continue;
 
-		Hand::SetHand(player, Hand(player));
-	}
-}
-
-void SerializeHands(CBitStream@ bs)
-{
-	//collect all hands into an array
-	Hand@[] hands;
-
-	for (uint i = 0; i < getPlayerCount(); i++)
-	{
-		CPlayer@ player = getPlayer(i);
-		if (player is null) continue;
-
-		Hand@ hand = Hand::getHand(player);
-		if (hand is null) continue;
-
-		hands.push_back(hand);
-	}
-
-	//serialize hands
-	uint n = hands.size();
-	bs.write_u16(n);
-
-	for (uint i = 0; i < n; i++)
-	{
-		hands[i].Serialize(bs);
+		Hand::AddHand(Hand(player));
 	}
 }

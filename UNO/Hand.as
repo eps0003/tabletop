@@ -1,21 +1,6 @@
 #include "Card.as"
 #include "Grab.as"
 
-namespace Hand
-{
-	void SetHand(CPlayer@ player, Hand@ hand)
-	{
-		player.set("hand", @hand);
-	}
-
-	Hand@ getHand(CPlayer@ player)
-	{
-		Hand@ hand;
-		player.get("hand", @hand);
-		return hand;
-	}
-}
-
 class Hand
 {
 	CPlayer@ player;
