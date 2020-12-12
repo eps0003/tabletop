@@ -67,12 +67,13 @@ class Card
 
 	bool contains(Vec2f point)
 	{
+		Vec2f alignedPoint = point.RotateBy(-rotation, position);
 		Vec2f halfDim = deck.cardDim / 2 * deck.scale;
 		return (
-			point.x >= position.x - halfDim.x &&
-			point.x <= position.x + halfDim.x &&
-			point.y >= position.y - halfDim.y &&
-			point.y <= position.y + halfDim.y
+			alignedPoint.x >= position.x - halfDim.x &&
+			alignedPoint.x <= position.x + halfDim.x &&
+			alignedPoint.y >= position.y - halfDim.y &&
+			alignedPoint.y <= position.y + halfDim.y
 		);
 	}
 
