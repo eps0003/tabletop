@@ -12,8 +12,8 @@ void onRestart(CRules@ this)
 {
 	Vec2f screenCenter = getDriver().getScreenCenterPos();
 
-	Stack@ drawPile = Stack("draw", screenCenter - Vec2f(100, 0));
-	Stack@ discardPile = Stack("discard", screenCenter + Vec2f(100, 0));
+	Stack@ drawPile = Stack("draw", Vec2f(-100, 0));
+	Stack@ discardPile = Stack("discard", Vec2f(100, 0));
 
 	Deck@ deck = Deck::getDeck("cards");
 

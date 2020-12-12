@@ -69,10 +69,22 @@ namespace Stack
 
 	void Deserialize(CBitStream@ bs)
 	{
+		Vec2f screenCenter = getDriver().getScreenCenterPos();
+
 		u16 n = bs.read_u16();
 		for (uint i = 0; i < n; i++)
 		{
-			Stack::AddStack(Stack(bs));
+			Stack@ stack = Stack(bs);
+
+			stack.position = screenCenter + stack.position;
+			for (uint i = 0; i < stack.cards.size(); i++)
+			{
+				Card@ card = stack.cards[i];
+				card.position = stack.position;
+				card.targetPosition = stack.position;
+			}
+
+			Stack::AddStack(stack);
 		}
 	}
 }
