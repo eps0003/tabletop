@@ -97,6 +97,18 @@ class Hand
 		{
 			cards[i].Render();
 		}
+
+		if (!player.isMyPlayer())
+		{
+			GUI::SetFont("name");
+
+			GUI::DrawTextCentered(player.getUsername(), position + Vec2f(0, 2), color_black);
+			GUI::DrawTextCentered(player.getUsername(), position - Vec2f(0, 2), color_black);
+			GUI::DrawTextCentered(player.getUsername(), position + Vec2f(2, 0), color_black);
+			GUI::DrawTextCentered(player.getUsername(), position - Vec2f(2, 0), color_black);
+
+			GUI::DrawTextCentered(player.getUsername(), position, color_white);
+		}
 	}
 
 	void Serialize(CBitStream@ bs)

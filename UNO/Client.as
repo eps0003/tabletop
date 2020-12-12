@@ -10,6 +10,7 @@
 void onInit(CRules@ this)
 {
 	Render::addScript(Render::layer_prehud, "Client.as", "Render", 0);
+	GUI::LoadFont("name", "GUI/Fonts/AveriaSerif-Bold.ttf", 20, true);
 	onRestart(this);
 }
 
