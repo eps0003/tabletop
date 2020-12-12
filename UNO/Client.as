@@ -55,8 +55,7 @@ void onTick(CRules@ this)
 
 void Render(int id)
 {
-	Vec2f screenDim = getDriver().getScreenDimensions();
-	DrawBackground(screenDim);
+	DrawBackground();
 
 	if (!isReady()) return;
 
@@ -66,30 +65,8 @@ void Render(int id)
 	Render::ClearZ();
 	Render::SetTransformScreenspace();
 
-	//render stacks
-	Stack@[] stacks = Stack::getStacks();
-	for (uint i = 0; i < stacks.size(); i++)
-	{
-		stacks[i].Render();
-	}
-
-	//render hands of other players
-	uint index = 1;
-	for (uint i = 0; i < getPlayerCount(); i++)
-	{
-		CPlayer@ player = getPlayer(i);
-		if (player is null) continue;
-
-		Hand@ tempHand = Hand::getHand(player);
-		if (tempHand is null) continue;
-
-		tempHand.Render(player.isMyPlayer() ? 0 : index);
-
-		if (!player.isMyPlayer())
-		{
-			index++;
-		}
-	}
+	Stack::Render();
+	Hand::Render();
 }
 
 void onCommand(CRules@ this, u8 cmd, CBitStream@ params)
@@ -174,16 +151,18 @@ void ResetKeybind(CRules@ this)
 	}
 }
 
-void DrawBackground(Vec2f screenDim)
+void DrawBackground()
 {
-	// GUI::DrawRectangle(Vec2f(0, 0), screenDim, SColor(255, 36, 115, 69));
+	Vec2f screenDim = getDriver().getScreenDimensions();
 
-	GUI::DrawIcon("woodFloor.png", Vec2f_zero, 0.5f);
-	GUI::DrawIcon("woodFloor.png", Vec2f(1000, 0), 0.5f);
-	GUI::DrawIcon("woodFloor.png", Vec2f(1000, 666), 0.5f);
-	GUI::DrawIcon("woodFloor.png", Vec2f(0, 666), 0.5f);
+	GUI::DrawRectangle(Vec2f(0, 0), screenDim, SColor(255, 36, 115, 69));
 
-	GUI::DrawIcon("table.png", screenDim / 2.0f - Vec2f(500, 500), 0.5f);
+	// GUI::DrawIcon("woodFloor.png", Vec2f_zero, 0.5f);
+	// GUI::DrawIcon("woodFloor.png", Vec2f(1000, 0), 0.5f);
+	// GUI::DrawIcon("woodFloor.png", Vec2f(1000, 666), 0.5f);
+	// GUI::DrawIcon("woodFloor.png", Vec2f(0, 666), 0.5f);
+
+	// GUI::DrawIcon("table.png", screenDim / 2.0f - Vec2f(500, 500), 0.5f);
 }
 
 void GrabCardInHand(Hand@ hand, Vec2f mousePos)

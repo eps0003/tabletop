@@ -45,6 +45,15 @@ namespace Stack
 		return stacks;
 	}
 
+	void Render()
+	{
+		Stack@[] stacks = Stack::getStacks();
+		for (uint i = 0; i < stacks.size(); i++)
+		{
+			stacks[i].Render();
+		}
+	}
+
 	void Serialize(CBitStream@ bs)
 	{
 		Stack@[] stacks = Stack::getStacks();

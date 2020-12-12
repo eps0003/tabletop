@@ -32,6 +32,26 @@ namespace Hand
 		return hands;
 	}
 
+	void Render()
+	{
+		uint index = 1;
+		for (uint i = 0; i < getPlayerCount(); i++)
+		{
+			CPlayer@ player = getPlayer(i);
+			if (player is null) continue;
+
+			Hand@ tempHand = Hand::getHand(player);
+			if (tempHand is null) continue;
+
+			tempHand.Render(player.isMyPlayer() ? 0 : index);
+
+			if (!player.isMyPlayer())
+			{
+				index++;
+			}
+		}
+	}
+
 	void Serialize(CBitStream@ bs)
 	{
 		Hand@[] hands = getHands();
