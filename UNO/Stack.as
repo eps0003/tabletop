@@ -60,9 +60,10 @@ class Stack
 	void Shuffle(uint seed = Time())
 	{
 		Random rand(seed);
+		uint n = cards.size();
 
 		//https://stackoverflow.com/a/12646864
-		for (int i = cards.size() - 1; i > 0; i--)
+		for (int i = n - 1; i > 0; i--)
 		{
 			uint j = rand.NextRanged(i + 1);
 
@@ -73,6 +74,14 @@ class Stack
 			Vec2f tempPos = cards[i].position;
 			cards[i].position = cards[j].position;
 			cards[j].position = tempPos;
+		}
+
+		//align cards
+		for (uint i = 0; i < n; i++)
+		{
+			Card@ card = cards[i];
+			// card.position = position;
+			card.targetRotation = 0;
 		}
 	}
 
