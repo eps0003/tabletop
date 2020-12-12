@@ -40,7 +40,7 @@ void onTick(CRules@ this)
 	else if (controls.isKeyJustPressed(controls.getActionKeyKey(AK_ACTION1)))
 	{
 		DiscardHeldCard(this, hand, mousePos);
-		DrawCard(this, mousePos);
+		DrawCards(this, mousePos, 1);
 	}
 	else if (controls.isKeyJustPressed(controls.getActionKeyKey(AK_ACTION2)))
 	{
@@ -97,21 +97,14 @@ void onCommand(CRules@ this, u8 cmd, CBitStream@ params)
 
 void DealCardsUsingNumberKeys(CRules@ this)
 {
-	Card@ topDrawCard = Stack::getStack("draw").getTopCard();
-	if (topDrawCard is null) return;
-
 	CControls@ controls = getControls();
 	Vec2f mousePos = getControls().getMouseScreenPos();
 
 	for (uint key = KEY_KEY_1; key <= KEY_KEY_9; key++)
 	{
-		if (controls.isKeyJustPressed(key) && topDrawCard.contains(mousePos))
-		{
-			CBitStream bs;
-			bs.write_u16(getLocalPlayer().getNetworkID());
-			bs.write_u8(key - KEY_KEY_0);
-			this.SendCommand(this.getCommandID("c_draw"), bs, true);
-		}
+		if (!controls.isKeyJustPressed(key)) continue;
+
+		DrawCards(this, mousePos, key - KEY_KEY_0);
 	}
 }
 
@@ -259,18 +252,20 @@ void DiscardHeldCard(CRules@ this, Hand@ hand, Vec2f mousePos)
 	}
 }
 
-void DrawCard(CRules@ this, Vec2f mousePos)
+void DrawCards(CRules@ this, Vec2f mousePos, uint count)
 {
-	Stack@ drawPile = Stack::getStack("draw");
-	if (drawPile is null) return;
-
-	//draw cards from draw pile
-	Card@ topDrawCard = drawPile.getTopCard();
-	if (topDrawCard !is null && topDrawCard.contains(mousePos))
+	Stack@[] stacks = Stack::getStacks();
+	for (uint i = 0; i < stacks.size(); i++)
 	{
+		Stack@ stack = stacks[i];
+
+		Card@ topCard = stack.getTopCard();
+		if (topCard is null || !topCard.contains(mousePos)) continue;
+
 		CBitStream bs;
 		bs.write_u16(getLocalPlayer().getNetworkID());
-		bs.write_u8(1);
+		bs.write_string(stack.name);
+		bs.write_u8(count);
 		this.SendCommand(this.getCommandID("c_draw"), bs, true);
 	}
 }

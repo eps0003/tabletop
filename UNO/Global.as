@@ -35,6 +35,12 @@ void onCommand(CRules@ this, u8 cmd, CBitStream@ params)
 		CPlayer@ player = getPlayerByNetworkId(id);
 		if (player is null) return;
 
+		string name;
+		if (!params.saferead_string(name)) return;
+
+		Stack@ stack = Stack::getStack(name);
+		if (stack is null) return;
+
 		Hand@ hand = Hand::getHand(player);
 		if (hand is null) return;
 
@@ -43,11 +49,10 @@ void onCommand(CRules@ this, u8 cmd, CBitStream@ params)
 
 		for (uint i = 0; i < count; i++)
 		{
-			Card@ card = drawPile.popCard();
+			Card@ card = stack.popCard();
 			if (card is null) return;
 
 			hand.PushCard(card);
-			card.Flip();
 		}
 
 		if (isClient())

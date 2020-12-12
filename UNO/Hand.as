@@ -27,6 +27,7 @@ class Hand
 	{
 		if (card !is null)
 		{
+			card.flipped = true;
 			card.hidden = !player.isMyPlayer();
 			cards.push_back(card);
 		}
