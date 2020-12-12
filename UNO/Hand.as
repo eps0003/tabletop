@@ -54,6 +54,16 @@ class Hand
 		return card;
 	}
 
+	Card@ getCard(uint index)
+	{
+		Card@ card;
+		if (index < cards.size())
+		{
+			@card = cards[index];
+		}
+		return card;
+	}
+
 	void Render(uint index)
 	{
 		Vec2f mousePos = getControls().getInterpMouseScreenPos();

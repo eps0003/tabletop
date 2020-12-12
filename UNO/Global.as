@@ -18,6 +18,7 @@ void onInit(CRules@ this)
 	this.addCommandID("c_organise_hand");
 	this.addCommandID("c_reset");
 	this.addCommandID("c_deal");
+	this.addCommandID("c_flip_card");
 }
 
 void onCommand(CRules@ this, u8 cmd, CBitStream@ params)
@@ -71,7 +72,7 @@ void onCommand(CRules@ this, u8 cmd, CBitStream@ params)
 		Hand@ hand = Hand::getHand(player);
 		if (hand is null) return;
 
-		uint index;
+		u16 index;
 		if (!params.saferead_u16(index)) return;
 
 		Card@ card = hand.takeCard(index);
@@ -132,5 +133,24 @@ void onCommand(CRules@ this, u8 cmd, CBitStream@ params)
 
 		Card@ card = hand.takeCard(oldIndex);
 		hand.InsertCard(newIndex, card);
+	}
+	else if (cmd == this.getCommandID("c_flip_card"))
+	{
+		u16 id;
+		if (!params.saferead_u16(id)) return;
+
+		CPlayer@ player = getPlayerByNetworkId(id);
+		if (player is null || player.isMyPlayer()) return;
+
+		u16 index;
+		if (!params.saferead_u16(index)) return;
+
+		Hand@ hand = Hand::getHand(player);
+		if (hand is null) return;
+
+		Card@ card = hand.getCard(index);
+		if (card is null) return;
+
+		card.Flip();
 	}
 }

@@ -51,6 +51,11 @@ void onTick(CRules@ this)
 	{
 		Grab::Drop();
 	}
+
+	if (controls.isKeyJustPressed(KEY_KEY_F))
+	{
+		FlipCardInHand(this, hand, mousePos);
+	}
 }
 
 void Render(int id)
@@ -267,5 +272,23 @@ void DrawCards(CRules@ this, Vec2f mousePos, uint count)
 		bs.write_string(stack.name);
 		bs.write_u8(count);
 		this.SendCommand(this.getCommandID("c_draw"), bs, true);
+	}
+}
+
+void FlipCardInHand(CRules@ this, Hand@ hand, Vec2f mousePos)
+{
+	for (int i = hand.cards.size() - 1; i >= 0; i--)
+	{
+		Card@ card = hand.cards[i];
+		if (!card.contains(mousePos)) continue;
+
+		card.Flip();
+
+		CBitStream bs;
+		bs.write_u16(hand.player.getNetworkID());
+		bs.write_u16(i);
+		this.SendCommand(this.getCommandID("c_flip_card"), bs, true);
+
+		break;
 	}
 }
