@@ -10,13 +10,13 @@ namespace Stack
 		rules.set("stack_map", stackMap);
 	}
 
-	void AddStack(string name, Stack@ stack)
+	void AddStack(Stack@ stack)
 	{
 		CRules@ rules = getRules();
 
 		dictionary stackMap;
 		rules.get("stack_map", stackMap);
-		stackMap.set(name, @stack);
+		stackMap.set(stack.name, @stack);
 		rules.set("stack_map", stackMap);
 	}
 
@@ -47,21 +47,23 @@ namespace Stack
 
 	void Serialize(CBitStream@ bs)
 	{
-		dictionary stackMap;
-		getRules().get("stack_map", stackMap);
+		Stack@[] stacks = Stack::getStacks();
 
-		string[]@ stackKeys = stackMap.getKeys();
-		uint n = stackKeys.size();
-
+		uint n = stacks.size();
 		bs.write_u16(n);
 
 		for (uint i = 0; i < n; i++)
 		{
-			string key = stackKeys[i];
-			Stack@ stack = Stack::getStack(key);
+			stacks[i].Serialize(bs);
+		}
+	}
 
-			bs.write_string(key);
-			stack.Serialize(bs);
+	void Deserialize(CBitStream@ bs)
+	{
+		u16 n = bs.read_u16();
+		for (uint i = 0; i < n; i++)
+		{
+			Stack::AddStack(Stack(bs));
 		}
 	}
 }

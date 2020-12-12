@@ -95,13 +95,7 @@ void onCommand(CRules@ this, u8 cmd, CBitStream@ params)
 {
 	if (cmd == this.getCommandID("s_sync_all"))
 	{
-		u16 stackCount = params.read_u16();
-		for (uint i = 0; i < stackCount; i++)
-		{
-			string name = params.read_string();
-			Stack@ stack = Stack(params);
-			Stack::AddStack(name, @stack);
-		}
+		Stack::Deserialize(params);
 
 		u16 handCount = params.read_u16();
 		for (uint i = 0; i < handCount; i++)
@@ -122,10 +116,17 @@ void onCommand(CRules@ this, u8 cmd, CBitStream@ params)
 		Hand@ hand = Hand(params);
 		Hand::SetHand(hand.player, hand);
 	}
-	else if (cmd == this.getCommandID("s_shuffle_draw_pile"))
+	else if (cmd == this.getCommandID("s_shuffle_stack"))
 	{
-		Stack@ drawPile = Stack(params);
-		Stack::AddStack("draw", @drawPile);
+		string name = params.read_string();
+		uint seed = params.read_u32();
+
+		Stack@ stack = Stack::getStack(name);
+		if (stack is null) return;
+
+		stack.Shuffle(seed);
+
+		Sound::Play("cardSlide" + (XORRandom(3) + 1) + ".ogg");
 	}
 }
 
@@ -154,19 +155,25 @@ void ShufflePiles(CRules@ this, Vec2f mousePos)
 	CControls@ controls = getControls();
 	if (!controls.isKeyJustPressed(KEY_KEY_S)) return;
 
-	Card@ topDrawCard = Stack::getStack("draw").getTopCard();
-	if (topDrawCard !is null && topDrawCard.contains(mousePos))
+	Stack@[] stacks = Stack::getStacks();
+	for (uint i = 0; i < stacks.size(); i++)
 	{
+		Stack@ stack = stacks[i];
+
+		Card@ topCard = stack.getTopCard();
+		if (topCard is null || !topCard.contains(mousePos)) continue;
+
 		CBitStream bs;
-		this.SendCommand(this.getCommandID("c_shuffle_draw_pile"), bs, true);
+		bs.write_string(stack.name);
+		this.SendCommand(this.getCommandID("c_shuffle_stack"), bs, true);
 	}
 
-	Card@ topDiscardCard = Stack::getStack("discard").getTopCard();
-	if (topDiscardCard !is null && topDiscardCard.contains(mousePos))
-	{
-		CBitStream bs;
-		this.SendCommand(this.getCommandID("c_restock_draw_pile"), bs, true);
-	}
+	// Card@ topDiscardCard = Stack::getStack("discard").getTopCard();
+	// if (topDiscardCard !is null && topDiscardCard.contains(mousePos))
+	// {
+	// 	CBitStream bs;
+	// 	this.SendCommand(this.getCommandID("c_restock_draw_pile"), bs, true);
+	// }
 }
 
 void ResetKeybind(CRules@ this)

@@ -2,26 +2,29 @@
 
 class Stack
 {
+	string name;
 	Vec2f position;
 
 	Card@[] cards;
 
-	private Random rand(Time());
-
-	Stack(Vec2f position)
+	Stack(string name, Vec2f position)
 	{
+		this.name = name;
 		this.position = position;
 	}
 
 	Stack(CBitStream@ bs)
 	{
+		name = bs.read_string();
 		position.x = bs.read_f32();
 		position.y = bs.read_f32();
 
 		u16 n = bs.read_u16();
 		for (uint i = 0; i < n; i++)
 		{
-			PushCard(Card(bs));
+			Card@ card = Card(bs);
+			card.position = position;
+			PushCard(card);
 		}
 	}
 
@@ -54,8 +57,10 @@ class Stack
 		return cards.isEmpty();
 	}
 
-	void Shuffle()
+	void Shuffle(uint seed = Time())
 	{
+		Random rand(seed);
+
 		//https://stackoverflow.com/a/12646864
 		for (int i = cards.size() - 1; i > 0; i--)
 		{
@@ -83,6 +88,7 @@ class Stack
 
 	void Serialize(CBitStream@ bs)
 	{
+		bs.write_string(name);
 		bs.write_f32(position.x);
 		bs.write_f32(position.y);
 
