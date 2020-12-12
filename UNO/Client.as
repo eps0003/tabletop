@@ -122,6 +122,11 @@ void onCommand(CRules@ this, u8 cmd, CBitStream@ params)
 		Hand@ hand = Hand(params);
 		Hand::SetHand(hand.player, hand);
 	}
+	else if (cmd == this.getCommandID("s_shuffle_draw_pile"))
+	{
+		Stack@ drawPile = Stack(params);
+		Stack::AddStack("draw", @drawPile);
+	}
 }
 
 void DealCardsUsingNumberKeys(CRules@ this)

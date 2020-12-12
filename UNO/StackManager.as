@@ -6,9 +6,6 @@ namespace Stack
 	{
 		CRules@ rules = getRules();
 
-		Stack@[] stacks;
-		rules.set("stacks", stacks);
-
 		dictionary stackMap;
 		rules.set("stack_map", stackMap);
 	}
@@ -16,10 +13,6 @@ namespace Stack
 	void AddStack(string name, Stack@ stack)
 	{
 		CRules@ rules = getRules();
-
-		Stack@[]@ stacks;
-		rules.get("stacks", @stacks);
-		stacks.push_back(@stack);
 
 		dictionary stackMap;
 		rules.get("stack_map", stackMap);
@@ -39,8 +32,16 @@ namespace Stack
 
 	Stack@[] getStacks()
 	{
+		dictionary stackMap;
+		getRules().get("stack_map", stackMap);
+
 		Stack@[] stacks;
-		getRules().get("stacks", stacks);
+		string[]@ stackKeys = stackMap.getKeys();
+		for (uint i = 0; i < stackKeys.size(); i++)
+		{
+			string key = stackKeys[i];
+			stacks.push_back(Stack::getStack(key));
+		}
 		return stacks;
 	}
 

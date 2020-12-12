@@ -12,6 +12,7 @@ void onInit(CRules@ this)
 	this.addCommandID("c_draw");
 	this.addCommandID("c_discard");
 	this.addCommandID("c_shuffle_draw_pile");
+	this.addCommandID("s_shuffle_draw_pile");
 	this.addCommandID("c_restock_draw_pile");
 	this.addCommandID("c_organise_hand");
 	this.addCommandID("c_reset");
@@ -74,15 +75,6 @@ void onCommand(CRules@ this, u8 cmd, CBitStream@ params)
 		if (isClient())
 		{
 			Sound::Play("cardPlace2.ogg");
-		}
-	}
-	else if (cmd == this.getCommandID("c_shuffle_draw_pile"))
-	{
-		drawPile.Shuffle();
-
-		if (isClient())
-		{
-			Sound::Play("cardSlide" + (XORRandom(3) + 1) + ".ogg");
 		}
 	}
 	else if (cmd == this.getCommandID("c_restock_draw_pile"))

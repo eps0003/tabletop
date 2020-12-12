@@ -68,6 +68,22 @@ void onCommand(CRules@ this, u8 cmd, CBitStream@ params)
 	{
 		LoadNextMap();
 	}
+	else if (cmd == this.getCommandID("c_shuffle_draw_pile"))
+	{
+		Stack@ drawPile = Stack::getStack("draw");
+		if (drawPile is null) return;
+
+		drawPile.Shuffle();
+
+		CBitStream bs;
+		drawPile.Serialize(bs);
+		this.SendCommand(this.getCommandID("s_shuffle_draw_pile"), bs, true);
+
+		// if (isClient())
+		// {
+		// 	Sound::Play("cardSlide" + (XORRandom(3) + 1) + ".ogg");
+		// }
+	}
 }
 
 void InitHands()
