@@ -8,7 +8,7 @@
 
 void onInit(CRules@ this)
 {
-	Game::SetScript("PlayingCards.as");
+	Game::SetScript("Uno.as");
 	onRestart(this);
 }
 
