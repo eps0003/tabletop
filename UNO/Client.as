@@ -281,6 +281,7 @@ void FlipCardInHand(CRules@ this, Hand@ hand, Vec2f mousePos)
 	{
 		Card@ card = hand.cards[i];
 		if (!card.contains(mousePos)) continue;
+		if (Grab::isGrabbing() && !Grab::isGrabbing(card)) continue;
 
 		card.Flip();
 
