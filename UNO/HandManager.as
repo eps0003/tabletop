@@ -2,9 +2,16 @@
 
 namespace Hand
 {
+	void Init()
+	{
+		Hand@[] hands;
+		getRules().set("hands", hands);
+	}
+
 	void AddHand(Hand@ hand)
 	{
 		hand.player.set("hand", @hand);
+		getRules().push("hands", @hand);
 	}
 
 	Hand@ getHand(CPlayer@ player)
@@ -17,44 +24,59 @@ namespace Hand
 	Hand@[] getHands()
 	{
 		Hand@[] hands;
+		getRules().get("hands", hands);
+		return hands;
+	}
 
-		for (uint i = 0; i < getPlayerCount(); i++)
+	void RandomizeHandOrder(uint seed = Time())
+	{
+		Random rand(seed);
+
+		Hand@[] hands = Hand::getHands();
+		uint n = hands.size();
+
+		//https://stackoverflow.com/a/12646864
+		for (int i = n - 1; i > 0; i--)
 		{
-			CPlayer@ player = getPlayer(i);
-			if (player is null) continue;
+			uint j = rand.NextRanged(i + 1);
 
-			Hand@ hand = Hand::getHand(player);
-			if (hand is null) continue;
-
-			hands.push_back(hand);
+			Hand@ temphand = hands[i];
+			@hands[i] = hands[j];
+			@hands[j] = temphand;
 		}
 
-		return hands;
+		getRules().set("hands", hands);
 	}
 
 	void Render()
 	{
-		uint index = 1;
-		for (uint i = 0; i < getPlayerCount(); i++)
+		Hand@[] hands = Hand::getHands();
+		uint n = hands.size();
+
+		//get index of my hand
+		uint myIndex = 0;
+		for (uint i = 0; i < n; i++)
 		{
-			CPlayer@ player = getPlayer(i);
-			if (player is null) continue;
-
-			Hand@ tempHand = Hand::getHand(player);
-			if (tempHand is null) continue;
-
-			tempHand.Render(player.isMyPlayer() ? 0 : index);
-
-			if (!player.isMyPlayer())
+			Hand@ hand = hands[i];
+			if (hand.player.isMyPlayer())
 			{
-				index++;
+				myIndex = i;
+				break;
 			}
+		}
+
+		for (uint i = 0; i < n; i++)
+		{
+			Hand@ hand = hands[i];
+
+			uint index = (n + i - myIndex) % n;
+			hand.Render(index);
 		}
 	}
 
 	void Serialize(CBitStream@ bs)
 	{
-		Hand@[] hands = getHands();
+		Hand@[] hands = Hand::getHands();
 
 		uint n = hands.size();
 		bs.write_u16(n);

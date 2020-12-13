@@ -35,11 +35,11 @@ class Card
 	Card(CBitStream@ bs)
 	{
 		index = bs.read_u16();
-		position.x = bs.read_f32();
-		position.y = bs.read_f32();
-		targetPosition = position;
-		rotation = bs.read_f32();
-		targetRotation = rotation;
+		targetPosition.x = bs.read_f32();
+		targetPosition.y = bs.read_f32();
+		position = targetPosition;
+		targetRotation = bs.read_f32();
+		rotation = targetRotation;
 		flipped = bs.read_bool();
 		flip = flipped ? 1 : 0;
 		@deck = Deck::Deserialize(bs);
@@ -100,9 +100,9 @@ class Card
 	void Serialize(CBitStream@ bs)
 	{
 		bs.write_u16(index);
-		bs.write_f32(position.x);
-		bs.write_f32(position.y);
-		bs.write_f32(rotation);
+		bs.write_f32(targetPosition.x);
+		bs.write_f32(targetPosition.y);
+		bs.write_f32(targetRotation);
 		bs.write_bool(flipped);
 		deck.Serialize(bs);
 	}

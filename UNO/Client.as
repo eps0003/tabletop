@@ -17,6 +17,8 @@ void onInit(CRules@ this)
 void onRestart(CRules@ this)
 {
 	SetReady(false);
+	Stack::Init();
+	Hand::Init();
 }
 
 void onTick(CRules@ this)

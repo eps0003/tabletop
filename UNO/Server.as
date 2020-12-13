@@ -14,6 +14,7 @@ void onInit(CRules@ this)
 
 void onRestart(CRules@ this)
 {
+	Stack::Init();
 	InitHands();
 	this.AddScript(Game::getScript());
 }
@@ -88,6 +89,8 @@ void onCommand(CRules@ this, u8 cmd, CBitStream@ params)
 
 void InitHands()
 {
+	Hand::Init();
+
 	for (uint i = 0; i < getPlayerCount(); i++)
 	{
 		CPlayer@ player = getPlayer(i);
@@ -95,4 +98,6 @@ void InitHands()
 
 		Hand::AddHand(Hand(player));
 	}
+
+	Hand::RandomizeHandOrder();
 }
