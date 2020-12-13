@@ -2,14 +2,6 @@
 
 namespace Stack
 {
-	void Init()
-	{
-		CRules@ rules = getRules();
-
-		dictionary stackMap;
-		rules.set("stack_map", stackMap);
-	}
-
 	void AddStack(Stack@ stack)
 	{
 		CRules@ rules = getRules();

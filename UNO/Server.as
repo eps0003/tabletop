@@ -14,7 +14,6 @@ void onInit(CRules@ this)
 
 void onRestart(CRules@ this)
 {
-	Stack::Init();
 	InitHands();
 	this.AddScript(Game::getScript());
 }
