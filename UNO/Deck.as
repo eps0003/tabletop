@@ -6,15 +6,13 @@ class Deck
 	string sprite;
 	Vec2f cardDim;
 	u16 backIndex;
-	float scale;
 
-	Deck(string name, string sprite, Vec2f cardDim, u16 backIndex, float scale = 1.0f)
+	Deck(string name, string sprite, Vec2f cardDim, u16 backIndex)
 	{
 		this.name = name;
 		this.sprite = sprite;
 		this.cardDim = cardDim;
 		this.backIndex = backIndex;
-		this.scale = scale;
 	}
 
 	Vertex[] getVertices(Card@ card)
@@ -22,7 +20,7 @@ class Deck
 		Vec2f imageDim;
 		GUI::GetImageDimensions(sprite, imageDim);
 
-		Vec2f halfDim = cardDim / 2.0f * scale;
+		Vec2f halfDim = getScaledDim() / 2.0f;
 		halfDim.x *= Maths::Abs(card.flip - 0.5f) * 2;
 
 		u16 i = (card.flip > 0.5f && !card.hidden) ? card.index : backIndex;
@@ -40,6 +38,13 @@ class Deck
 		};
 
 		return vertices;
+	}
+
+	Vec2f getScaledDim()
+	{
+		float targetY = smallestScreenDim() / 4.0f;
+		float scalar = getScalar(cardDim.y, targetY);
+		return cardDim * scalar;
 	}
 
 	void Serialize(CBitStream@ bs)

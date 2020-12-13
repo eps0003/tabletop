@@ -1,5 +1,6 @@
 #include "Card.as"
 #include "Grab.as"
+#include "Utilities.as"
 
 class Hand
 {
@@ -66,12 +67,13 @@ class Hand
 
 	void Render(uint index)
 	{
+		float scale = smallestScreenDim();
+
 		Vec2f mousePos = getControls().getInterpMouseScreenPos();
 		Vec2f screenDim = getDriver().getScreenDimensions();
 
 		float angle = float(index) / getPlayerCount() * 360;
-		float len = screenDim.y / 2 - 100;
-		Vec2f position = screenDim / 2.0f + Vec2f_lengthdir(len, angle + 90);
+		Vec2f position = screenDim / 2.0f + Vec2f_lengthdir(scale / 2.5f, angle + 90);
 
 		uint n = cards.size();
 		bool hover = false;
@@ -83,14 +85,19 @@ class Hand
 			float hoverOffset = 0;
 			if (!hover && player.isMyPlayer() && card.contains(mousePos) && (!Grab::isGrabbing() || Grab::isGrabbing(card)))
 			{
-				hoverOffset -= 30;
+				hoverOffset += scale / 32.0f;
 				hover = true;
 			}
 
 			float x = i - (n - 1) / 2.0f;
 
-			card.targetPosition = position + Vec2f(x * 40, hoverOffset + Maths::Abs(Maths::Sin(x / 20.0f)) * 200).RotateBy(angle);
+			card.targetPosition = position + Vec2f(x * 40, Maths::Abs(Maths::Sin(x / 20.0f)) * 200 - hoverOffset).RotateBy(angle);
 			card.targetRotation = angle + x * 2;
+
+			// float len = scale / 1.5f + hoverOffset;
+			// Vec2f offset = Vec2f_lengthdir(len, (angle + 180) + (x * len / 60.0f));
+			// card.targetPosition = position + offset;
+			// card.targetRotation = 90 - offset.Angle();
 		}
 
 		for (uint i = 0; i < n; i++)

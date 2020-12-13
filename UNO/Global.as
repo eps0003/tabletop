@@ -23,7 +23,7 @@ void onInit(CRules@ this)
 
 	Deck::AddDeck(Deck("cards", "playingCards.png", Vec2f(140, 190), 53));
 	Deck::AddDeck(Deck("uno", "uno.png", Vec2f(164, 256), 52));
-	Deck::AddDeck(Deck("exploding_kittens", "explodingKittens.png", Vec2f(409, 585), 52, 0.3f));
+	Deck::AddDeck(Deck("exploding_kittens", "explodingKittens.png", Vec2f(409, 585), 52));
 }
 
 void onCommand(CRules@ this, u8 cmd, CBitStream@ params)

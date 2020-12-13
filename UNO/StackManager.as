@@ -1,4 +1,5 @@
 #include "Stack.as"
+#include "Utilities.as"
 
 namespace Stack
 {
@@ -76,7 +77,7 @@ namespace Stack
 		{
 			Stack@ stack = Stack(bs);
 
-			stack.position = screenCenter + stack.position;
+			stack.position = screenCenter + stack.position * smallestScreenDim();
 			for (uint i = 0; i < stack.cards.size(); i++)
 			{
 				Card@ card = stack.cards[i];
