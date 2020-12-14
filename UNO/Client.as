@@ -60,6 +60,11 @@ void onTick(CRules@ this)
 	}
 }
 
+void onPlayerLeave(CRules@ this, CPlayer@ player)
+{
+	Hand::RemoveHand(player);
+}
+
 void Render(int id)
 {
 	DrawBackground();

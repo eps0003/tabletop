@@ -72,7 +72,7 @@ class Hand
 		Vec2f mousePos = getControls().getInterpMouseScreenPos();
 		Vec2f screenDim = getDriver().getScreenDimensions();
 
-		float angle = float(index) / getPlayerCount() * 360;
+		float angle = float(index) / Hand::getHandCount() * 360;
 		Vec2f position = screenDim / 2.0f + Vec2f_lengthdir(scale / 2.5f, angle + 90);
 
 		uint n = cards.size();

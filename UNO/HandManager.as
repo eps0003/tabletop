@@ -4,14 +4,25 @@ namespace Hand
 {
 	void Init()
 	{
-		Hand@[] hands;
-		getRules().set("hands", hands);
+		CPlayer@[] order;
+		getRules().set("hand_order", order);
 	}
 
 	void AddHand(Hand@ hand)
 	{
 		hand.player.set("hand", @hand);
-		getRules().push("hands", @hand);
+		getRules().push("hand_order", @hand.player);
+	}
+
+	void RemoveHand(CPlayer@ player)
+	{
+		player.set("hand", null);
+
+		int index = Hand::getHandIndex(player);
+		if (index > -1)
+		{
+			getRules().removeAt("hand_order", index);
+		}
 	}
 
 	Hand@ getHand(CPlayer@ player)
@@ -23,29 +34,59 @@ namespace Hand
 
 	Hand@[] getHands()
 	{
+		CPlayer@[] order = Hand::getHandOrder();
 		Hand@[] hands;
-		getRules().get("hands", hands);
+		for (uint i = 0; i < order.size(); i++)
+		{
+			CPlayer@ player = order[i];
+			hands.push_back(Hand::getHand(player));
+		}
 		return hands;
+	}
+
+	uint getHandCount()
+	{
+		return Hand::getHandOrder().size();
+	}
+
+	CPlayer@[] getHandOrder()
+	{
+		CPlayer@[] order;
+		getRules().get("hand_order", order);
+		return order;
+	}
+
+	int getHandIndex(CPlayer@ player)
+	{
+		CPlayer@[] order = Hand::getHandOrder();
+		for (uint i = 0; i < order.size(); i++)
+		{
+			if (order[i] is player)
+			{
+				return i;
+			}
+		}
+		return -1;
 	}
 
 	void RandomizeHandOrder(uint seed = Time())
 	{
 		Random rand(seed);
 
-		Hand@[] hands = Hand::getHands();
-		uint n = hands.size();
+		CPlayer@[] order = Hand::getHandOrder();
+		uint n = order.size();
 
 		//https://stackoverflow.com/a/12646864
 		for (int i = n - 1; i > 0; i--)
 		{
 			uint j = rand.NextRanged(i + 1);
 
-			Hand@ temphand = hands[i];
-			@hands[i] = hands[j];
-			@hands[j] = temphand;
+			CPlayer@ tempPlayer = order[i];
+			@order[i] = order[j];
+			@order[j] = tempPlayer;
 		}
 
-		getRules().set("hands", hands);
+		getRules().set("hand_order", order);
 	}
 
 	void Render()
@@ -53,17 +94,8 @@ namespace Hand
 		Hand@[] hands = Hand::getHands();
 		uint n = hands.size();
 
-		//get index of my hand
-		uint myIndex = 0;
-		for (uint i = 0; i < n; i++)
-		{
-			Hand@ hand = hands[i];
-			if (hand.player.isMyPlayer())
-			{
-				myIndex = i;
-				break;
-			}
-		}
+		int myIndex = Hand::getHandIndex(getLocalPlayer());
+		if (myIndex < 0) return;
 
 		for (uint i = 0; i < n; i++)
 		{
