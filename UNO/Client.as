@@ -27,6 +27,7 @@ void onTick(CRules@ this)
 
 	CControls@ controls = getControls();
 	Vec2f mousePos = controls.getMouseScreenPos();
+	Vec2f screenDim = getDriver().getScreenDimensions();
 
 	Hand@ hand = Hand::getHand(getLocalPlayer());
 
@@ -37,7 +38,16 @@ void onTick(CRules@ this)
 
 	if (Grab::isGrabbing())
 	{
-		OrganiseHeldCards(this, hand);
+		Card@ grabCard = Grab::getGrabbed();
+		if (Grab::getGrabbedPosition().y > screenDim.y - smallestScreenDim() / 4.0f)
+		{
+			OrganiseHeldCards(this, hand);
+		}
+
+		if (!controls.isKeyPressed(controls.getActionKeyKey(AK_ACTION2)))
+		{
+			Grab::Drop();
+		}
 	}
 	else if (controls.isKeyJustPressed(controls.getActionKeyKey(AK_ACTION1)))
 	{
@@ -47,11 +57,6 @@ void onTick(CRules@ this)
 	else if (controls.isKeyJustPressed(controls.getActionKeyKey(AK_ACTION2)))
 	{
 		GrabCardInHand(hand, mousePos);
-	}
-
-	if (!controls.isKeyPressed(controls.getActionKeyKey(AK_ACTION2)))
-	{
-		Grab::Drop();
 	}
 
 	if (controls.isKeyJustPressed(KEY_KEY_F))

@@ -23,6 +23,13 @@ namespace Grab
 		return grabCard;
 	}
 
+	Vec2f getGrabbedPosition()
+	{
+		Vec2f mousePos = getControls().getInterpMouseScreenPos();
+		Vec2f offset = getRules().get_Vec2f("grab_offset");
+		return mousePos - offset;
+	}
+
 	bool isGrabbing(Card@ card)
 	{
 		CRules@ rules = getRules();

@@ -51,9 +51,7 @@ class Card
 
 		if (Grab::isGrabbing(this))
 		{
-			Vec2f mousePos = getControls().getInterpMouseScreenPos();
-			Vec2f offset = rules.get_Vec2f("grab_offset");
-			position = mousePos - offset;
+			position = Grab::getGrabbedPosition();
 		}
 		else
 		{
