@@ -44,4 +44,13 @@ namespace Grab
 		Card@ grabCard;
 		return rules.get("grab_card", @grabCard);
 	}
+
+	void Update()
+	{
+		Card@ grabCard = Grab::getGrabbed();
+		if (grabCard !is null)
+		{
+			grabCard.targetRotation = 0;
+		}
+	}
 }

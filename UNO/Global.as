@@ -83,12 +83,23 @@ void onCommand(CRules@ this, u8 cmd, CBitStream@ params)
 		Card@ card = hand.takeCard(index);
 		if (card is null) return;
 
+		string stackName;
+		if (!params.saferead_string(stackName)) return;
+
+		Stack@ stack = Stack::getStack(stackName);
+		if (stack is null) return;
+
 		card.targetRotation = rand.NextFloat() * 20 - 10;
-		discardPile.PushCard(card);
+		stack.PushCard(card);
 
 		if (isClient())
 		{
 			Sound::Play("cardPlace2.ogg");
+
+			if (Grab::isGrabbing(card))
+			{
+				Grab::Drop();
+			}
 		}
 	}
 	else if (cmd == this.getCommandID("c_restock_draw_pile"))

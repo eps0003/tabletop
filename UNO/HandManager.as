@@ -89,6 +89,18 @@ namespace Hand
 		getRules().set("hand_order", order);
 	}
 
+	void Update()
+	{
+		Hand@[] hands = Hand::getHands();
+		for (uint i = 0; i < hands.size(); i++)
+		{
+			Hand@ hand = hands[i];
+			int index = Hand::getOrientedHandIndex(i);
+			hand.Update(index);
+
+		}
+	}
+
 	void Render()
 	{
 		Hand@[] hands = Hand::getHands();
@@ -100,10 +112,16 @@ namespace Hand
 		for (uint i = 0; i < n; i++)
 		{
 			Hand@ hand = hands[i];
-
-			uint index = (n + i - myIndex) % n;
+			uint index = Hand::getOrientedHandIndex(i);
 			hand.Render(index);
 		}
+	}
+
+	uint getOrientedHandIndex(uint index)
+	{
+		uint n = Hand::getHandCount();
+		int myIndex = Hand::getHandIndex(getLocalPlayer());
+		return (n + index - myIndex) % n;
 	}
 
 	void Serialize(CBitStream@ bs)

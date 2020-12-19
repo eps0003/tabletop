@@ -65,15 +65,27 @@ class Hand
 		return card;
 	}
 
-	void Render(uint index)
+	Vec2f getHandPosition(uint index)
+	{
+		Vec2f screenDim = getDriver().getScreenDimensions();
+		float scale = smallestScreenDim();
+		float angle = getHandRotation(index);
+		Vec2f position = screenDim / 2.0f + Vec2f_lengthdir(scale / 2.5f, angle + 90);
+		return position;
+	}
+
+	float getHandRotation(uint index)
+	{
+		return float(index) / Hand::getHandCount() * 360;
+	}
+
+	void Update(uint index)
 	{
 		float scale = smallestScreenDim();
-
 		Vec2f mousePos = getControls().getInterpMouseScreenPos();
-		Vec2f screenDim = getDriver().getScreenDimensions();
 
-		float angle = float(index) / Hand::getHandCount() * 360;
-		Vec2f position = screenDim / 2.0f + Vec2f_lengthdir(scale / 2.5f, angle + 90);
+		Vec2f position = Hand::getHandPosition(index);
+		float rotation = Hand::getHandRotation(index);
 
 		uint n = cards.size();
 		bool hover = false;
@@ -91,16 +103,14 @@ class Hand
 
 			float x = i - (n - 1) / 2.0f;
 
-			card.targetPosition = position + Vec2f(x * 40, Maths::Abs(Maths::Sin(x / 20.0f)) * 200 - hoverOffset).RotateBy(angle);
-			card.targetRotation = angle + x * 2;
-
-			// float len = scale / 1.5f + hoverOffset;
-			// Vec2f offset = Vec2f_lengthdir(len, (angle + 180) + (x * len / 60.0f));
-			// card.targetPosition = position + offset;
-			// card.targetRotation = 90 - offset.Angle();
+			card.targetPosition = position + Vec2f(x * 40, Maths::Abs(Maths::Sin(x / 20.0f)) * 200 - hoverOffset).RotateBy(rotation);
+			card.targetRotation = rotation + x * 2;
 		}
+	}
 
-		for (uint i = 0; i < n; i++)
+	void Render(uint index)
+	{
+		for (uint i = 0; i < cards.size(); i++)
 		{
 			cards[i].Render();
 		}
@@ -108,6 +118,8 @@ class Hand
 		if (!player.isMyPlayer())
 		{
 			GUI::SetFont("name");
+
+			Vec2f position = Hand::getHandPosition(index);
 
 			GUI::DrawTextCentered(player.getUsername(), position + Vec2f(0, 2), color_black);
 			GUI::DrawTextCentered(player.getUsername(), position - Vec2f(0, 2), color_black);

@@ -31,6 +31,30 @@ namespace Stack
 		return stack;
 	}
 
+	Stack@ getNearestStack(Vec2f point, float &out len)
+	{
+		Stack@ nearest;
+
+		Stack@[] stacks = Stack::getStacks();
+		for (uint i = 0; i < stacks.size(); i++)
+		{
+			Stack@ stack = stacks[i];
+			Card@ topCard = stack.getTopCard();
+
+			Vec2f pos = topCard !is null ? topCard.position : stack.position;
+			Vec2f offset = point - pos;
+			float thisLen = Maths::Sqrt(offset.x * offset.x + offset.y * offset.y);
+
+			if (i == 0 || thisLen < len)
+			{
+				@nearest = stack;
+				len = thisLen;
+			}
+		}
+
+		return nearest;
+	}
+
 	Stack@[] getStacks()
 	{
 		dictionary stackMap;

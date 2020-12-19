@@ -39,24 +39,39 @@ void onTick(CRules@ this)
 	if (Grab::isGrabbing())
 	{
 		Card@ grabCard = Grab::getGrabbed();
+
 		if (Grab::getGrabbedPosition().y > screenDim.y - smallestScreenDim() / 4.0f)
 		{
 			OrganiseHeldCards(this, hand);
+			Hand::Update();
+		}
+		else
+		{
+			Grab::Update();
 		}
 
-		if (!controls.isKeyPressed(controls.getActionKeyKey(AK_ACTION2)))
+		if (!controls.isKeyPressed(controls.getActionKeyKey(AK_ACTION1)))
 		{
+			float len;
+			Stack@ stack = Stack::getNearestStack(Grab::getGrabbedPosition(), len);
+			if (stack !is null && len <= smallestScreenDim() / 10.0f)
+			{
+				DiscardHeldCard(this, hand, grabCard, stack);
+			}
+
 			Grab::Drop();
 		}
 	}
-	else if (controls.isKeyJustPressed(controls.getActionKeyKey(AK_ACTION1)))
+	else
 	{
-		DiscardHeldCard(this, hand, mousePos);
-		DrawCards(this, mousePos, 1);
-	}
-	else if (controls.isKeyJustPressed(controls.getActionKeyKey(AK_ACTION2)))
-	{
-		GrabCardInHand(hand, mousePos);
+		if (controls.isKeyJustPressed(controls.getActionKeyKey(AK_ACTION1)))
+		{
+			// DiscardHeldCard(this, hand, mousePos);
+			DrawCards(this, mousePos, 1);
+			GrabCardInHand(hand, mousePos);
+		}
+
+		Hand::Update();
 	}
 
 	if (controls.isKeyJustPressed(KEY_KEY_F))
@@ -194,7 +209,7 @@ void OrganiseHeldCards(CRules@ this, Hand@ hand)
 	Card@ grabCard = Grab::getGrabbed();
 	if (grabCard is null) return;
 
-	uint index;
+	int index = -1;
 
 	//find index of grabbed card
 	for (uint i = 0; i < hand.cards.size(); i++)
@@ -206,6 +221,8 @@ void OrganiseHeldCards(CRules@ this, Hand@ hand)
 			break;
 		}
 	}
+
+	if (index == -1) return;
 
 	//move to left
 	for (uint i = 0; i < index; i++)
@@ -263,6 +280,24 @@ void DiscardHeldCard(CRules@ this, Hand@ hand, Vec2f mousePos)
 		CBitStream bs;
 		bs.write_u16(getLocalPlayer().getNetworkID());
 		bs.write_u16(i);
+		bs.write_string("discard");
+		this.SendCommand(this.getCommandID("c_discard"), bs, true);
+
+		break;
+	}
+}
+
+void DiscardHeldCard(CRules@ this, Hand@ hand, Card@ card, Stack@ stack)
+{
+	for (int i = 0; i < hand.cards.size(); i++)
+	{
+		Card@ card2 = hand.cards[i];
+		if (card2 !is card) continue;
+
+		CBitStream bs;
+		bs.write_u16(getLocalPlayer().getNetworkID());
+		bs.write_u16(i);
+		bs.write_string(stack.name);
 		this.SendCommand(this.getCommandID("c_discard"), bs, true);
 
 		break;
