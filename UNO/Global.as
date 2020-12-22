@@ -72,7 +72,7 @@ void onCommand(CRules@ this, u8 cmd, CBitStream@ params)
 		if (!params.saferead_u16(id)) return;
 
 		CPlayer@ player = getPlayerByNetworkId(id);
-		if (player is null) return;
+		if (player is null || player.isMyPlayer()) return;
 
 		Hand@ hand = Hand::getHand(player);
 		if (hand is null) return;

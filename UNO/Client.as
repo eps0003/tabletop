@@ -4,8 +4,11 @@
 #include "Utilities.as"
 #include "StackManager.as"
 #include "HandManager.as"
+#include "TurnManager.as"
 
 #define CLIENT_ONLY
+
+Random rand(Time());
 
 void onInit(CRules@ this)
 {
@@ -30,11 +33,15 @@ void onTick(CRules@ this)
 	Vec2f screenDim = getDriver().getScreenDimensions();
 
 	Hand@ hand = Hand::getHand(getLocalPlayer());
+	bool myTurn = Turn::isMyTurn();
 
-	//controls and keybinds
-	DealCardsUsingNumberKeys(this);
-	ShufflePiles(this, mousePos);
 	ResetKeybind(this);
+	ShufflePiles(this, mousePos);
+
+	if (myTurn)
+	{
+		DealCardsUsingNumberKeys(this);
+	}
 
 	if (Grab::isGrabbing())
 	{
@@ -52,11 +59,14 @@ void onTick(CRules@ this)
 
 		if (!controls.isKeyPressed(controls.getActionKeyKey(AK_ACTION1)))
 		{
-			float len;
-			Stack@ stack = Stack::getNearestStack(Grab::getGrabbedPosition(), len);
-			if (stack !is null && len <= smallestScreenDim() / 10.0f)
+			if (myTurn)
 			{
-				DiscardHeldCard(this, hand, grabCard, stack);
+				float len;
+				Stack@ stack = Stack::getNearestStack(Grab::getGrabbedPosition(), len);
+				if (stack !is null && len <= smallestScreenDim() / 10.0f)
+				{
+					DiscardHeldCard(this, hand, grabCard, stack);
+				}
 			}
 
 			Grab::Drop();
@@ -66,8 +76,11 @@ void onTick(CRules@ this)
 	{
 		if (controls.isKeyJustPressed(controls.getActionKeyKey(AK_ACTION1)))
 		{
-			// DiscardHeldCard(this, hand, mousePos);
-			DrawCards(this, mousePos, 1);
+			if (myTurn)
+			{
+				DrawCards(this, mousePos, 1);
+			}
+
 			GrabCardInHand(hand, mousePos);
 		}
 
@@ -269,30 +282,17 @@ void SyncOrdaniseHand(CRules@ this, uint oldIndex, uint newIndex)
 	this.SendCommand(this.getCommandID("c_organise_hand"), bs, true);
 }
 
-void DiscardHeldCard(CRules@ this, Hand@ hand, Vec2f mousePos)
-{
-	//click on card in hand to put card on discard pile
-	for (int i = hand.cards.size() - 1; i >= 0; i--)
-	{
-		Card@ card = hand.cards[i];
-		if (!card.contains(mousePos)) continue;
-
-		CBitStream bs;
-		bs.write_u16(getLocalPlayer().getNetworkID());
-		bs.write_u16(i);
-		bs.write_string("discard");
-		this.SendCommand(this.getCommandID("c_discard"), bs, true);
-
-		break;
-	}
-}
-
 void DiscardHeldCard(CRules@ this, Hand@ hand, Card@ card, Stack@ stack)
 {
 	for (int i = 0; i < hand.cards.size(); i++)
 	{
 		Card@ card2 = hand.cards[i];
 		if (card2 !is card) continue;
+
+		@card = hand.takeCard(i);
+		card.targetRotation = rand.NextFloat() * 20 - 10;
+		stack.PushCard(card);
+		Sound::Play("cardPlace2.ogg");
 
 		CBitStream bs;
 		bs.write_u16(getLocalPlayer().getNetworkID());
