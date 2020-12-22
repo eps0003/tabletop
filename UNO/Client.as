@@ -40,6 +40,7 @@ void onTick(CRules@ this)
 
 	if (myTurn)
 	{
+		EndTurnKeybind(this);
 		DealCardsUsingNumberKeys(this);
 	}
 
@@ -186,6 +187,16 @@ void ResetKeybind(CRules@ this)
 	{
 		CBitStream bs;
 		this.SendCommand(this.getCommandID("c_reset"), bs, false);
+	}
+}
+
+void EndTurnKeybind(CRules@ this)
+{
+	CControls@ controls = getControls();
+	if (controls.isKeyJustPressed(KEY_SPACE))
+	{
+		CBitStream bs;
+		this.SendCommand(this.getCommandID("c_end_turn"), bs, false);
 	}
 }
 

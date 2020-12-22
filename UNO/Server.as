@@ -3,6 +3,7 @@
 #include "StackManager.as"
 #include "HandManager.as"
 #include "GameManager.as"
+#include "TurnManager.as"
 
 #define SERVER_ONLY
 
@@ -73,6 +74,10 @@ void onCommand(CRules@ this, u8 cmd, CBitStream@ params)
 	if (cmd == this.getCommandID("c_reset"))
 	{
 		LoadNextMap();
+	}
+	else if (cmd == this.getCommandID("c_end_turn"))
+	{
+		Turn::NextTurn();
 	}
 	else if (cmd == this.getCommandID("c_shuffle_stack"))
 	{

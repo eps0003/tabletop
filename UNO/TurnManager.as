@@ -5,7 +5,9 @@ namespace Turn
 	void SetTurn(int index)
 	{
 		uint n = Hand::getHandCount();
-		getRules().set_u8("turn_index", index % n);
+		CRules@ rules = getRules();
+		rules.set_u8("turn_index", index % n);
+		rules.Sync("turn_index", true);
 	}
 
 	void SetTurn(CPlayer@ player)
@@ -41,12 +43,14 @@ namespace Turn
 	void SetDirection(s8 dir)
 	{
 		dir = dir >= 0 ? 1 : -1;
-		getRules().set_s8("turn_direction", dir);
+		CRules@ rules = getRules();
+		rules.set_s8("turn_direction", dir);
+		rules.Sync("turn_direction", true);
 	}
 
 	s8 getDirection()
 	{
-		return getRules().get_s8("turn_direction");
+		return getRules().get_s8("turn_direction") >= 0 ? 1 : -1;
 	}
 
 	void ReverseDirection()

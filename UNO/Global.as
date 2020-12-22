@@ -4,6 +4,7 @@
 #include "StackManager.as"
 #include "HandManager.as"
 #include "DeckManager.as"
+#include "TurnManager.as"
 
 Random rand(Time());
 
@@ -20,6 +21,7 @@ void onInit(CRules@ this)
 	this.addCommandID("c_reset");
 	this.addCommandID("c_deal");
 	this.addCommandID("c_flip_card");
+	this.addCommandID("c_end_turn");
 
 	Deck::AddDeck(Deck("cards", "playingCards.png", Vec2f(140, 190), 53));
 	Deck::AddDeck(Deck("uno", "uno.png", Vec2f(164, 256), 52));
@@ -91,6 +93,15 @@ void onCommand(CRules@ this, u8 cmd, CBitStream@ params)
 
 		card.targetRotation = rand.NextFloat() * 20 - 10;
 		stack.PushCard(card);
+
+		if (isServer())
+		{
+			//reverse card
+			if (card.index % 13 == 12)
+			{
+				Turn::ReverseDirection();
+			}
+		}
 
 		if (isClient())
 		{
