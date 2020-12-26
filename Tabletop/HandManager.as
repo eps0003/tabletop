@@ -1,4 +1,5 @@
 #include "Hand.as"
+#include "TurnManager.as"
 
 namespace Hand
 {
@@ -22,6 +23,12 @@ namespace Hand
 		if (index > -1)
 		{
 			getRules().removeAt("hand_order", index);
+
+			// u8 turnIndex = Turn::getTurnIndex();
+			// if (turnIndex < index)
+			// {
+			// 	Turn::SetTurn(turnIndex - 1);
+			// }
 		}
 	}
 
