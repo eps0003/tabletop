@@ -73,12 +73,21 @@ void onCommand(CRules@ this, u8 cmd, CBitStream@ params)
 {
 	if (cmd == this.getCommandID("c_reset"))
 	{
+		u16 id;
+		if (!params.saferead_u16(id)) return;
+
+		CPlayer@ player = getPlayerByNetworkId(id);
+		if (player is null || !player.isMod()) return;
+
 		LoadNextMap();
 	}
 	else if (cmd == this.getCommandID("c_end_turn"))
 	{
-		u16 id = params.read_u16();
-		if (Turn::getTurn().getNetworkID() != id) return;
+		u16 id;
+		if (!params.saferead_u16(id)) return;
+
+		u16 turnPlayerID = Turn::getTurn().getNetworkID();
+		if (turnPlayerID != id) return;
 
 		Turn::NextTurn();
 	}

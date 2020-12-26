@@ -186,6 +186,7 @@ void ResetKeybind(CRules@ this)
 	if (controls.isKeyJustPressed(KEY_KEY_R))
 	{
 		CBitStream bs;
+		bs.write_u16(getLocalPlayer().getNetworkID());
 		this.SendCommand(this.getCommandID("c_reset"), bs, false);
 	}
 }
