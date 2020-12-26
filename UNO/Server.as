@@ -77,6 +77,9 @@ void onCommand(CRules@ this, u8 cmd, CBitStream@ params)
 	}
 	else if (cmd == this.getCommandID("c_end_turn"))
 	{
+		u16 id = params.read_u16();
+		if (Turn::getTurn().getNetworkID() != id) return;
+
 		Turn::NextTurn();
 	}
 	else if (cmd == this.getCommandID("c_shuffle_stack"))

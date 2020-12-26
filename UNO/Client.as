@@ -196,6 +196,7 @@ void EndTurnKeybind(CRules@ this)
 	if (controls.isKeyJustPressed(KEY_SPACE))
 	{
 		CBitStream bs;
+		bs.write_u16(getLocalPlayer().getNetworkID());
 		this.SendCommand(this.getCommandID("c_end_turn"), bs, false);
 	}
 }
