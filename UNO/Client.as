@@ -99,6 +99,13 @@ void onPlayerLeave(CRules@ this, CPlayer@ player)
 	Hand::RemoveHand(player);
 }
 
+void onRender(CRules@ this)
+{
+	if (!isReady()) return;
+
+	Turn::Render();
+}
+
 void Render(int id)
 {
 	DrawBackground();

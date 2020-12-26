@@ -65,4 +65,12 @@ namespace Turn
 		s8 dir = Turn::getDirection();
 		Turn::SetTurn(index + dir);
 	}
+
+	void Render()
+	{
+		GUI::SetFont("name");
+
+		CPlayer@ turnPlayer = Turn::getTurn();
+		GUI::DrawText(turnPlayer.getUsername() + "'s turn", Vec2f(10, 10), color_white);
+	}
 }
