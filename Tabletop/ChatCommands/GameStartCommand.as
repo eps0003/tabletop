@@ -6,14 +6,12 @@ const u8 MAXIMUM_PLAYER_COUNT = 6;
 class GameStartCommand : ChatCommand
 {
 	private PlayerQueue@ queue;
-	private TurnManager@ turns;
 
-	GameStartCommand(PlayerQueue@ queue, TurnManager@ turns)
+	GameStartCommand(PlayerQueue@ queue)
 	{
 		super("start", "Start the game");
 
 		@this.queue = queue;
-		@this.turns = turns;
 	}
 
 	void Execute(string[] args, CPlayer@ player)
@@ -27,7 +25,7 @@ class GameStartCommand : ChatCommand
 		}
 
 		CPlayer@[] players = queue.remove(MAXIMUM_PLAYER_COUNT);
-		turns.SetPlayers(players);
+		GameManager::Set(Game(players));
 
 		string message = getTranslatedString("A game has started with {PLAYERS} players!")
 			.replace("{PLAYERS}", "" + players.size());

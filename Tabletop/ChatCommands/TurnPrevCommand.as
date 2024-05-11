@@ -2,31 +2,29 @@
 
 class TurnPrevCommand : ChatCommand
 {
-	private TurnManager@ turns;
-
-	TurnPrevCommand(TurnManager@ turns)
+	TurnPrevCommand()
 	{
 		super("prev", "Proceed with the previous player's turn");
 		AddAlias("previous");
 		AddAlias("back");
-
-		@this.turns = turns;
 	}
 
 	void Execute(string[] args, CPlayer@ player)
 	{
 		if (!isServer()) return;
 
-		if (turns.isEmpty())
+		Game@ game = GameManager::get();
+
+		if (game is null)
 		{
-			server_AddToChat(getTranslatedString("There are no players participating"), ConsoleColour::ERROR, player);
+			server_AddToChat(getTranslatedString("There is no game in progress"), ConsoleColour::ERROR, player);
 			return;
 		}
 
-		turns.NextPlayer();
+		game.NextTurn();
 
 		string message = getTranslatedString("{PLAYER}'s turn")
-			.replace("{PLAYER}", turns.getPlayer().getUsername());
+			.replace("{PLAYER}", game.getTurnPlayer().getUsername());
 		server_AddToChat(message, ConsoleColour::INFO);
 	}
 }
