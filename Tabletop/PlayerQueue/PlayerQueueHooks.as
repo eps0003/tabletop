@@ -5,6 +5,8 @@
 #include "GameStartCommand.as"
 #include "TurnPrevCommand.as"
 #include "TurnNextCommand.as"
+#include "CardDrawCommand.as"
+#include "CardPlayCommand.as"
 
 PlayerQueue@ queue;
 
@@ -17,6 +19,8 @@ void onInit(CRules@ this)
 	ChatCommands::RegisterCommand(GameStartCommand(queue));
 	ChatCommands::RegisterCommand(TurnPrevCommand());
 	ChatCommands::RegisterCommand(TurnNextCommand());
+	ChatCommands::RegisterCommand(CardDrawCommand());
+	ChatCommands::RegisterCommand(CardPlayCommand());
 
 	onRestart(this);
 }

@@ -8,7 +8,6 @@ class QueueJoinCommand : ChatCommand
 	{
 		super("join", "Join the queue");
 		AddAlias("add");
-		AddAlias("play");
 
 		@this.queue = queue;
 	}
