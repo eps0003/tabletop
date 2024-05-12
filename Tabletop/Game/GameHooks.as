@@ -156,3 +156,48 @@ void onCommand(CRules@ this, u8 cmd, CBitStream@ params)
 		game.replenishDrawPile();
 	}
 }
+
+void onRender(CRules@ this)
+{
+	Game@ game = GameManager::get();
+	if (game is null) return;
+
+	GUI::SetFont("menu");
+
+	uint yIndex = 0;
+
+	GUI::DrawText("Turn: " + game.getTurnPlayer().getUsername(), Vec2f(10, 10 + 15 * yIndex++), color_white);
+
+	yIndex++;
+
+	GUI::DrawText("Draw pile: " + stringifyCards(game.getDrawPile()), Vec2f(10, 10 + 15 * yIndex++), color_white);
+	GUI::DrawText("Discard pile: " + stringifyCards(game.getDiscardPile()), Vec2f(10, 10 + 15 * yIndex++), color_white);
+
+	yIndex++;
+
+	CPlayer@[] players = game.getPlayers();
+	for (uint i = 0; i < players.size(); i++)
+	{
+		CPlayer@ player = players[i];
+		u16[] hand = game.getHand(player);
+
+		GUI::DrawText(player.getUsername() + ": " + stringifyCards(hand), Vec2f(10, 10 + 15 * yIndex++), color_white);
+	}
+}
+
+string stringifyCards(u16[] cards)
+{
+	string[] cardNames;
+
+	for (uint j = 0; j < cards.size(); j++)
+	{
+		cardNames.push_back("" + cards[j]);
+	}
+
+	if (cardNames.empty())
+	{
+		return "{}";
+	}
+
+	return "{ " + join(cardNames, ", ") + " }";
+}
