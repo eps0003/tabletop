@@ -26,3 +26,12 @@ float getScalar(float current, float target)
 {
 	return current != 0 ? target / current : 0;
 }
+
+bool saferead_player(CBitStream@ bs, CPlayer@ &out player)
+{
+	u16 id;
+	if (!bs.saferead_netid(id)) return false;
+
+	@player = getPlayerByNetworkId(id);
+	return player !is null;
+}

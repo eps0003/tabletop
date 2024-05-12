@@ -1,4 +1,4 @@
-Random random(Time());
+#include "Utilities.as"
 
 class Game
 {
@@ -8,27 +8,120 @@ class Game
 	private u16[] drawPile = { 1, 2, 3, 4, 5 };
 	private u16[] discardPile;
 
-	private uint turnIndex = 0;
+	private u16 turnIndex = 0;
 	private s8 turnDirection = 1;
 
 	Game(CPlayer@[] players)
 	{
-		if (players.empty())
-		{
-			error("Game was instantiated with no players");
-			printTrace();
-			return;
-		}
-
 		this.players = players;
 
-		ShuffleDrawPile(random);
+		print("Initialised game: " + players.size() + " players");
+
+		if (players.empty())
+		{
+			warn("Game was instantiated with no players");
+		}
+
+		ShuffleDrawPile();
+
+		CBitStream bs;
+		bs.write_u16(players.size());
 
 		for (uint i = 0; i < players.size(); i++)
 		{
+			CPlayer@ player = players[i];
+
 			u16[] cards; // TODO: Deal cards
-			hands.set(players[i].getUsername(), cards);
+			hands.set(player.getUsername(), cards);
+
+			bs.write_u16(player.getNetworkID());
 		}
+
+		if (isServer())
+		{
+			getRules().SendCommand(getRules().getCommandID("init game"), bs, true);
+		}
+	}
+
+	Game(CBitStream@ bs)
+	{
+		u16 playerCount;
+		if (!bs.saferead_u16(playerCount)) return;
+
+		for (uint i = 0; i < players.size(); i++)
+		{
+			CPlayer@ player;
+			if (!saferead_player(bs, @player)) return;
+
+			players.push_back(player);
+
+			u16[] hand;
+			if (!deserialiseCards(bs, hand)) return;
+
+			hands.set(player.getUsername(), hand);
+		}
+
+		if (!deserialiseCards(bs, drawPile)) return;
+		if (!deserialiseCards(bs, discardPile)) return;
+
+		if (!bs.saferead_u16(turnIndex)) return;
+		if (!bs.saferead_u16(turnDirection)) return;
+
+		print("Synced game: " + getLocalPlayer().getUsername());
+	}
+
+	void Sync(CPlayer@ player)
+	{
+		if (!isServer() || player.isMyPlayer()) return;
+
+		CBitStream bs;
+
+		bs.write_u16(players.size());
+
+		for (uint i = 0; i < players.size(); i++)
+		{
+			CPlayer@ player = players[i];
+
+			bs.write_u16(player.getNetworkID());
+			SerialiseCards(bs, getHand(player));
+		}
+
+		SerialiseCards(bs, drawPile);
+		SerialiseCards(bs, discardPile);
+
+		bs.write_u16(turnIndex);
+		bs.write_s8(turnDirection);
+
+		getRules().SendCommand(getRules().getCommandID("sync game"), bs, player);
+
+		print("Synced game: " + player.getUsername());
+	}
+
+	private void SerialiseCards(CBitStream@ bs, u16[] cards)
+	{
+		u16 cardCount = cards.size();
+		bs.write_u16(cardCount);
+
+		for (uint i = 0; i < cardCount; i++)
+		{
+			bs.write_u16(cards[i]);
+		}
+	}
+
+	private bool deserialiseCards(CBitStream@ bs, u16[] &out cards)
+	{
+		u16 cardCount;
+		if (!bs.saferead_u16(cardCount)) return false;
+
+		for (uint i = 0; i < cardCount; i++)
+		{
+			u16 card;
+			if (!bs.saferead_u16(card)) return false;
+
+			cards.push_back(card);
+		}
+
+		return true;
 	}
 
 	CPlayer@[] getPlayers()
@@ -70,6 +163,15 @@ class Game
 				players.removeAt(i);
 				hands.delete(player.getUsername());
 
+				print("Removed player: " + player.getUsername());
+
+				if (isServer())
+				{
+					CBitStream bs;
+					bs.write_u16(player.getNetworkID());
+					getRules().SendCommand(getRules().getCommandID("remove player"), bs, true);
+				}
+
 				break;
 			}
 		}
@@ -78,11 +180,27 @@ class Game
 	void NextTurn()
 	{
 		turnIndex = (int(turnIndex) + turnDirection) % players.size();
+
+		print("Next turn: " + getTurnPlayer().getUsername());
+
+		if (isServer())
+		{
+			CBitStream bs;
+			getRules().SendCommand(getRules().getCommandID("next turn"), bs, true);
+		}
 	}
 
 	void ReverseDirection()
 	{
 		turnDirection *= -1;
+
+		print("Reversed direction: " + turnDirection);
+
+		if (isServer())
+		{
+			CBitStream bs;
+			getRules().SendCommand(getRules().getCommandID("reverse direction"), bs, true);
+		}
 	}
 
 	bool isPlayersTurn(CPlayer@ player)
@@ -112,6 +230,15 @@ class Game
 		drawPile.removeAt(index);
 		hand.push_back(card);
 
+		print("Drew card: " + player.getUsername());
+
+		if (isServer())
+		{
+			CBitStream bs;
+			bs.write_u16(player.getNetworkID());
+			getRules().SendCommand(getRules().getCommandID("draw card"), bs, true);
+		}
+
 		return true;
 	}
 
@@ -131,6 +258,16 @@ class Game
 			{
 				hand.removeAt(i);
 				discardPile.push_back(card);
+
+				print("Played card: " + player.getUsername() + ", " + card);
+
+				if (isServer())
+				{
+					CBitStream bs;
+					bs.write_u16(player.getNetworkID());
+					bs.write_u16(card);
+					getRules().SendCommand(getRules().getCommandID("play card"), bs, true);
+				}
 
 				return true;
 			}
@@ -160,6 +297,16 @@ class Game
 		hands.set(player1.getUsername(), player2Hand);
 		hands.set(player2.getUsername(), player1Hand);
 
+		print("Traded hands: " + player1.getUsername() + ", " + player2.getUsername());
+
+		if (isServer())
+		{
+			CBitStream bs;
+			bs.write_u16(player1.getNetworkID());
+			bs.write_u16(player2.getNetworkID());
+			getRules().SendCommand(getRules().getCommandID("trade hands"), bs, true);
+		}
+
 		return true;
 	}
 
@@ -181,11 +328,22 @@ class Game
 
 		hand.clear();
 
+		print("Discarded hand: " + player.getUsername());
+
+		if (isServer())
+		{
+			CBitStream bs;
+			bs.write_u16(player.getNetworkID());
+			getRules().SendCommand(getRules().getCommandID("discard hand"), bs, true);
+		}
+
 		return true;
 	}
 
-	void ShuffleDrawPile(Random@ random)
+	void ShuffleDrawPile(uint seed = Time())
 	{
+		Random random(seed);
+
 		// Durstenfeld shuffle
 		// https://stackoverflow.com/a/12646864
 		for (uint i = drawPile.size() - 1; i > 0; i--)
@@ -195,6 +353,15 @@ class Game
 			u16 temp = drawPile[i];
 			drawPile[i] = drawPile[j];
 			drawPile[j] = temp;
+		}
+
+		print("Shuffled draw pile: " + seed + " seed");
+
+		if (isServer())
+		{
+			CBitStream bs;
+			bs.write_u32(random.getSeed());
+			getRules().SendCommand(getRules().getCommandID("shuffle draw pile"), bs, true);
 		}
 	}
 
@@ -216,7 +383,15 @@ class Game
 		discardPile.clear();
 		discardPile.push_back(topDiscardCard);
 
-		ShuffleDrawPile(random);
+		print("Replenished draw pile: +" + (discardCount - 1) + " cards");
+
+		if (isServer())
+		{
+			CBitStream bs;
+			getRules().SendCommand(getRules().getCommandID("replenish draw pile"), bs, true);
+
+			ShuffleDrawPile();
+		}
 
 		return true;
 	}

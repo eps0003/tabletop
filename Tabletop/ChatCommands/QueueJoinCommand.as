@@ -2,19 +2,17 @@
 
 class QueueJoinCommand : ChatCommand
 {
-	private PlayerQueue@ queue;
-
-	QueueJoinCommand(PlayerQueue@ queue)
+	QueueJoinCommand()
 	{
 		super("join", "Join the queue");
 		AddAlias("add");
-
-		@this.queue = queue;
 	}
 
 	void Execute(string[] args, CPlayer@ player)
 	{
 		if (!isServer()) return;
+
+		PlayerQueue@ queue = PlayerQueue::get();
 
 		if (queue.contains(player))
 		{

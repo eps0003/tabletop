@@ -2,20 +2,18 @@
 
 class QueueLeaveCommand : ChatCommand
 {
-	private PlayerQueue@ queue;
-
-	QueueLeaveCommand(PlayerQueue@ queue)
+	QueueLeaveCommand()
 	{
 		super("leave", "Leave the queue");
 		AddAlias("remove");
 		AddAlias("rem");
-
-		@this.queue = queue;
 	}
 
 	void Execute(string[] args, CPlayer@ player)
 	{
 		if (!isServer()) return;
+
+		PlayerQueue@ queue = PlayerQueue::get();
 
 		if (!queue.contains(player))
 		{

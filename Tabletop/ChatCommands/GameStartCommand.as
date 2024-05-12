@@ -1,22 +1,20 @@
 #include "ChatCommand.as"
 
-const u8 MINIMUM_PLAYER_COUNT = 1; // TODO: Change to 2
+const u8 MINIMUM_PLAYER_COUNT = 1; // TODO: Set to 2
 const u8 MAXIMUM_PLAYER_COUNT = 6;
 
 class GameStartCommand : ChatCommand
 {
-	private PlayerQueue@ queue;
-
-	GameStartCommand(PlayerQueue@ queue)
+	GameStartCommand()
 	{
 		super("start", "Start the game");
-
-		@this.queue = queue;
 	}
 
 	void Execute(string[] args, CPlayer@ player)
 	{
 		if (!isServer()) return;
+
+		PlayerQueue@ queue = PlayerQueue::get();
 
 		if (queue.size() < MINIMUM_PLAYER_COUNT)
 		{
