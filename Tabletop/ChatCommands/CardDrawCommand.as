@@ -19,6 +19,12 @@ class CardDrawCommand : ChatCommand
 			return;
 		}
 
+		if (!game.isPlayersTurn(player))
+		{
+			server_AddToChat(getTranslatedString("It is not currently your turn"), ConsoleColour::ERROR, player);
+			return;
+		}
+
 		if (!game.drawCard(player))
 		{
 			server_AddToChat(getTranslatedString("You are unable to draw a card"), ConsoleColour::ERROR, player);
@@ -28,7 +34,7 @@ class CardDrawCommand : ChatCommand
 		game.NextTurn();
 
 		string message = getTranslatedString("{PLAYER} drew a card. They now have {CARDS} card(s).")
-			.replace("{PLAYER}", game.getTurnPlayer().getUsername())
+			.replace("{PLAYER}", player.getUsername())
 			.replace("{CARDS}", "" + game.getHand(player).size());
 		server_AddToChat(message, ConsoleColour::INFO);
 	}

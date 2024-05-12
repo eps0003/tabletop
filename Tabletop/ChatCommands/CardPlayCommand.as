@@ -20,6 +20,12 @@ class CardPlayCommand : ChatCommand
 			return;
 		}
 
+		if (!game.isPlayersTurn(player))
+		{
+			server_AddToChat(getTranslatedString("It is not currently your turn"), ConsoleColour::ERROR, player);
+			return;
+		}
+
 		if (args.size() < 1)
 		{
 			server_AddToChat(getTranslatedString("Specify a card to play"), ConsoleColour::ERROR, player);
@@ -37,7 +43,7 @@ class CardPlayCommand : ChatCommand
 		game.NextTurn();
 
 		string message = getTranslatedString("{PLAYER} played a {CARD} card. They now have {CARDS} card(s).")
-			.replace("{PLAYER}", game.getTurnPlayer().getUsername())
+			.replace("{PLAYER}", player.getUsername())
 			.replace("{CARD}", "" + card)
 			.replace("{CARDS}", "" + game.getHand(player).size());
 		server_AddToChat(message, ConsoleColour::INFO);
