@@ -15,7 +15,7 @@ class Game
 	{
 		this.players = players;
 
-		print("Initialised game: " + players.size() + " players");
+		print("Initialised game: " + players.size() + plural(" player", " players", players.size()));
 
 		if (players.empty())
 		{
@@ -48,7 +48,7 @@ class Game
 		u16 playerCount;
 		if (!bs.saferead_u16(playerCount)) return;
 
-		for (uint i = 0; i < players.size(); i++)
+		for (uint i = 0; i < playerCount; i++)
 		{
 			CPlayer@ player;
 			if (!saferead_player(bs, @player)) return;
@@ -80,10 +80,10 @@ class Game
 
 		for (uint i = 0; i < players.size(); i++)
 		{
-			CPlayer@ player = players[i];
+			CPlayer@ gamePlayer = players[i];
 
-			bs.write_u16(player.getNetworkID());
-			SerialiseCards(bs, getHand(player));
+			bs.write_u16(gamePlayer.getNetworkID());
+			SerialiseCards(bs, getHand(gamePlayer));
 		}
 
 		SerialiseCards(bs, drawPile);
@@ -209,13 +209,8 @@ class Game
 		return turnPlayer !is null && turnPlayer is player;
 	}
 
-	bool drawCard(CPlayer@ player)
+	bool drawCards(CPlayer@ player, u16 count)
 	{
-		if (drawPile.empty())
-		{
-			return false;
-		}
-
 		u16[]@ hand;
 		hands.get(player.getUsername(), @hand);
 
@@ -224,19 +219,41 @@ class Game
 			return false;
 		}
 
+		if (drawPile.size() < count)
+		{
+			if (!replenishDrawPile())
+			{
+				return false;
+			}
+
+			if (drawPile.size() < count)
+			{
+				return false;
+			}
+		}
+
 		uint index = drawPile.size() - 1;
 		u16 card = drawPile[index];
 
 		drawPile.removeAt(index);
 		hand.push_back(card);
 
-		print("Drew card: " + player.getUsername());
+		print("Drew " + plural("card", "cards", count) + ": " + player.getUsername() + ", +" + count + plural(" card", " cards", count));
 
 		if (isServer())
 		{
 			CBitStream bs;
 			bs.write_u16(player.getNetworkID());
-			getRules().SendCommand(getRules().getCommandID("draw card"), bs, true);
+			bs.write_u16(count);
+			getRules().SendCommand(getRules().getCommandID("draw cards"), bs, true);
+		}
+
+		if (drawPile.empty())
+		{
+			if (!replenishDrawPile())
+			{
+				warn("No more cards in the draw pile");
+			}
 		}
 
 		return true;
@@ -383,7 +400,7 @@ class Game
 		discardPile.clear();
 		discardPile.push_back(topDiscardCard);
 
-		print("Replenished draw pile: +" + (discardCount - 1) + " cards");
+		print("Replenished draw pile: +" + (discardCount - 1) + plural(" card", " cards", discardCount - 1));
 
 		if (isServer())
 		{

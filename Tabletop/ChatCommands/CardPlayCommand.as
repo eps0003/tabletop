@@ -42,10 +42,9 @@ class CardPlayCommand : ChatCommand
 
 		game.NextTurn();
 
-		string message = getTranslatedString("{PLAYER} played a {CARD} card. They now have {CARDS} card(s).")
+		string message = getTranslatedString("{PLAYER} played a {CARD} card")
 			.replace("{PLAYER}", player.getUsername())
-			.replace("{CARD}", "" + card)
-			.replace("{CARDS}", "" + game.getHand(player).size());
+			.replace("{CARD}", "" + card);
 		server_AddToChat(message, ConsoleColour::INFO);
 	}
 }

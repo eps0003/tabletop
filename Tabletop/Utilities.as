@@ -35,3 +35,8 @@ bool saferead_player(CBitStream@ bs, CPlayer@ &out player)
 	@player = getPlayerByNetworkId(id);
 	return player !is null;
 }
+
+string plural(string singular, string plural, float value)
+{
+	return value == 1 ? singular : plural;
+}

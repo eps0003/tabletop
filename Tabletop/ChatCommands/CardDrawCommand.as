@@ -25,7 +25,7 @@ class CardDrawCommand : ChatCommand
 			return;
 		}
 
-		if (!game.drawCard(player))
+		if (!game.drawCards(player, 1))
 		{
 			server_AddToChat(getTranslatedString("You are unable to draw a card"), ConsoleColour::ERROR, player);
 			return;
@@ -33,9 +33,8 @@ class CardDrawCommand : ChatCommand
 
 		game.NextTurn();
 
-		string message = getTranslatedString("{PLAYER} drew a card. They now have {CARDS} card(s).")
-			.replace("{PLAYER}", player.getUsername())
-			.replace("{CARDS}", "" + game.getHand(player).size());
+		string message = getTranslatedString("{PLAYER} drew a card")
+			.replace("{PLAYER}", player.getUsername());
 		server_AddToChat(message, ConsoleColour::INFO);
 	}
 }
