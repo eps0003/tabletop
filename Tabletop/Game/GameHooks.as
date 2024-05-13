@@ -46,6 +46,9 @@ void onCommand(CRules@ this, u8 cmd, CBitStream@ params)
 {
 	if (!isServer() && cmd == this.getCommandID("init game"))
 	{
+		u32 seed;
+		if (!params.saferead_u32(seed)) return;
+
 		u16 playerCount;
 		if (!params.saferead_u16(playerCount)) return;
 
@@ -59,7 +62,7 @@ void onCommand(CRules@ this, u8 cmd, CBitStream@ params)
 			players.push_back(player);
 		}
 
-		GameManager::Set(Game(players));
+		GameManager::Set(Game(players, seed));
 	}
 	else if (!isServer() && cmd == this.getCommandID("sync game"))
 	{
@@ -97,10 +100,7 @@ void onCommand(CRules@ this, u8 cmd, CBitStream@ params)
 		CPlayer@ player;
 		if (!saferead_player(params, @player)) return;
 
-		u16 count;
-		if (!params.saferead_u16(count)) return;
-
-		game.drawCards(player, count);
+		game.drawCards(player);
 	}
 	else if (!isServer() && cmd == this.getCommandID("play card"))
 	{
@@ -189,9 +189,10 @@ string stringifyCards(u16[] cards)
 {
 	string[] cardNames;
 
-	for (uint j = 0; j < cards.size(); j++)
+	for (uint i = 0; i < cards.size(); i++)
 	{
-		cardNames.push_back("" + cards[j]);
+		u16 card = cards[i];
+		cardNames.push_back(Card::getName(card) + " (" + card + ")");
 	}
 
 	if (cardNames.empty())

@@ -5,7 +5,7 @@ class CardPlayCommand : ChatCommand
 	CardPlayCommand()
 	{
 		super("play", "Play the specified card");
-		SetUsage("<card>");
+		SetUsage("<card> [wild_color]");
 	}
 
 	void Execute(string[] args, CPlayer@ player)
@@ -34,17 +34,61 @@ class CardPlayCommand : ChatCommand
 
 		u16 card = parseInt(args[0]);
 
-		if (!game.playCard(player, card))
+		if (!game.playerHasCard(player, card))
 		{
-			server_AddToChat(getTranslatedString("You are unable to play the card"), ConsoleColour::ERROR, player);
+			server_AddToChat(getTranslatedString("This card is not in your hand"), ConsoleColour::ERROR, player);
 			return;
 		};
 
-		game.NextTurn();
+		if (!game.canPlayCard(player, card))
+		{
+			server_AddToChat(getTranslatedString("You are unable to play this card"), ConsoleColour::ERROR, player);
+			return;
+		};
+
+		if (Card::isFlag(card, Card::Flag::Wild))
+		{
+			if (args.size() < 2)
+			{
+				server_AddToChat(getTranslatedString("Specify a colour to change to"), ConsoleColour::ERROR, player);
+				return;
+			}
+
+			string color = args[1];
+			if (color == "red")
+			{
+				card |= Card::Color::Red;
+			}
+			else if (color == "yellow")
+			{
+				card |= Card::Color::Yellow;
+			}
+			else if (color == "green")
+			{
+				card |= Card::Color::Green;
+			}
+			else if (color == "blue")
+			{
+				card |= Card::Color::Blue;
+			}
+			else
+			{
+				server_AddToChat(getTranslatedString("Specify a valid color: red, yellow, green, blue"), ConsoleColour::ERROR, player);
+				return;
+			}
+		}
+
+		if (!game.playCard(player, card))
+		{
+			server_AddToChat(getTranslatedString("You are unable to play this card"), ConsoleColour::ERROR, player);
+			return;
+		};
 
 		string message = getTranslatedString("{PLAYER} played a {CARD} card")
 			.replace("{PLAYER}", player.getUsername())
 			.replace("{CARD}", "" + card);
 		server_AddToChat(message, ConsoleColour::INFO);
+
+		game.NextTurn();
 	}
 }

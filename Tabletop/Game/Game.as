@@ -1,17 +1,138 @@
+#include "Cards.as"
 #include "Utilities.as"
+
+const u16 STARTING_HAND_SIZE = 7;
 
 class Game
 {
 	private CPlayer@[] players;
 	private dictionary hands;
 
-	private u16[] drawPile = { 1, 2, 3, 4, 5 };
+	private u16[] drawPile = {
+		Card::Color::Red | Card::Value::Zero | 0,
+		Card::Color::Red | Card::Value::One | 0,
+		Card::Color::Red | Card::Value::One | 1,
+		Card::Color::Red | Card::Value::Two | 0,
+		Card::Color::Red | Card::Value::Two | 1,
+		Card::Color::Red | Card::Value::Three | 0,
+		Card::Color::Red | Card::Value::Three | 1,
+		Card::Color::Red | Card::Value::Four | 0,
+		Card::Color::Red | Card::Value::Four | 1,
+		Card::Color::Red | Card::Value::Five | 0,
+		Card::Color::Red | Card::Value::Five | 1,
+		Card::Color::Red | Card::Value::Six | 0,
+		Card::Color::Red | Card::Value::Six | 1,
+		Card::Color::Red | Card::Value::Seven | 0,
+		Card::Color::Red | Card::Value::Seven | 1,
+		Card::Color::Red | Card::Value::Eight | 0,
+		Card::Color::Red | Card::Value::Eight | 1,
+		Card::Color::Red | Card::Value::Nine | 0,
+		Card::Color::Red | Card::Value::Nine | 1,
+		Card::Color::Red | Card::Value::Nine | 0,
+		Card::Color::Red | Card::Value::Reverse | 0,
+		Card::Color::Red | Card::Value::Reverse | 1,
+		Card::Color::Red | Card::Value::Skip | 0,
+		Card::Color::Red | Card::Value::Skip | 1,
+		Card::Color::Red | Card::Value::Draw2 | 0,
+		Card::Color::Red | Card::Value::Draw2 | 1,
+
+		Card::Color::Yellow | Card::Value::Zero | 0,
+		Card::Color::Yellow | Card::Value::One | 0,
+		Card::Color::Yellow | Card::Value::One | 1,
+		Card::Color::Yellow | Card::Value::Two | 0,
+		Card::Color::Yellow | Card::Value::Two | 1,
+		Card::Color::Yellow | Card::Value::Three | 0,
+		Card::Color::Yellow | Card::Value::Three | 1,
+		Card::Color::Yellow | Card::Value::Four | 0,
+		Card::Color::Yellow | Card::Value::Four | 1,
+		Card::Color::Yellow | Card::Value::Five | 0,
+		Card::Color::Yellow | Card::Value::Five | 1,
+		Card::Color::Yellow | Card::Value::Six | 0,
+		Card::Color::Yellow | Card::Value::Six | 1,
+		Card::Color::Yellow | Card::Value::Seven | 0,
+		Card::Color::Yellow | Card::Value::Seven | 1,
+		Card::Color::Yellow | Card::Value::Eight | 0,
+		Card::Color::Yellow | Card::Value::Eight | 1,
+		Card::Color::Yellow | Card::Value::Nine | 0,
+		Card::Color::Yellow | Card::Value::Nine | 1,
+		Card::Color::Yellow | Card::Value::Nine | 0,
+		Card::Color::Yellow | Card::Value::Reverse | 0,
+		Card::Color::Yellow | Card::Value::Reverse | 1,
+		Card::Color::Yellow | Card::Value::Skip | 0,
+		Card::Color::Yellow | Card::Value::Skip | 1,
+		Card::Color::Yellow | Card::Value::Draw2 | 0,
+		Card::Color::Yellow | Card::Value::Draw2 | 1,
+
+		Card::Color::Green | Card::Value::Zero | 0,
+		Card::Color::Green | Card::Value::One | 0,
+		Card::Color::Green | Card::Value::One | 1,
+		Card::Color::Green | Card::Value::Two | 0,
+		Card::Color::Green | Card::Value::Two | 1,
+		Card::Color::Green | Card::Value::Three | 0,
+		Card::Color::Green | Card::Value::Three | 1,
+		Card::Color::Green | Card::Value::Four | 0,
+		Card::Color::Green | Card::Value::Four | 1,
+		Card::Color::Green | Card::Value::Five | 0,
+		Card::Color::Green | Card::Value::Five | 1,
+		Card::Color::Green | Card::Value::Six | 0,
+		Card::Color::Green | Card::Value::Six | 1,
+		Card::Color::Green | Card::Value::Seven | 0,
+		Card::Color::Green | Card::Value::Seven | 1,
+		Card::Color::Green | Card::Value::Eight | 0,
+		Card::Color::Green | Card::Value::Eight | 1,
+		Card::Color::Green | Card::Value::Nine | 0,
+		Card::Color::Green | Card::Value::Nine | 1,
+		Card::Color::Green | Card::Value::Nine | 0,
+		Card::Color::Green | Card::Value::Reverse | 0,
+		Card::Color::Green | Card::Value::Reverse | 1,
+		Card::Color::Green | Card::Value::Skip | 0,
+		Card::Color::Green | Card::Value::Skip | 1,
+		Card::Color::Green | Card::Value::Draw2 | 0,
+		Card::Color::Green | Card::Value::Draw2 | 1,
+
+		Card::Color::Blue | Card::Value::Zero | 0,
+		Card::Color::Blue | Card::Value::One | 0,
+		Card::Color::Blue | Card::Value::One | 1,
+		Card::Color::Blue | Card::Value::Two | 0,
+		Card::Color::Blue | Card::Value::Two | 1,
+		Card::Color::Blue | Card::Value::Three | 0,
+		Card::Color::Blue | Card::Value::Three | 1,
+		Card::Color::Blue | Card::Value::Four | 0,
+		Card::Color::Blue | Card::Value::Four | 1,
+		Card::Color::Blue | Card::Value::Five | 0,
+		Card::Color::Blue | Card::Value::Five | 1,
+		Card::Color::Blue | Card::Value::Six | 0,
+		Card::Color::Blue | Card::Value::Six | 1,
+		Card::Color::Blue | Card::Value::Seven | 0,
+		Card::Color::Blue | Card::Value::Seven | 1,
+		Card::Color::Blue | Card::Value::Eight | 0,
+		Card::Color::Blue | Card::Value::Eight | 1,
+		Card::Color::Blue | Card::Value::Nine | 0,
+		Card::Color::Blue | Card::Value::Nine | 1,
+		Card::Color::Blue | Card::Value::Reverse | 0,
+		Card::Color::Blue | Card::Value::Reverse | 1,
+		Card::Color::Blue | Card::Value::Skip | 0,
+		Card::Color::Blue | Card::Value::Skip | 1,
+		Card::Color::Blue | Card::Value::Draw2 | 0,
+		Card::Color::Blue | Card::Value::Draw2 | 1,
+
+		Card::Color::Wild | Card::Value::Draw4 | 0,
+		Card::Color::Wild | Card::Value::Draw4 | 1,
+		Card::Color::Wild | Card::Value::Draw4 | 2,
+		Card::Color::Wild | Card::Value::Draw4 | 3,
+		Card::Color::Wild | 0,
+		Card::Color::Wild | 1,
+		Card::Color::Wild | 2,
+		Card::Color::Wild | 3
+	};
 	private u16[] discardPile;
+
+	private bool pendingAction = false;
 
 	private u16 turnIndex = 0;
 	private s8 turnDirection = 1;
 
-	Game(CPlayer@[] players)
+	Game(CPlayer@[] players, uint seed = Time())
 	{
 		this.players = players;
 
@@ -22,23 +143,47 @@ class Game
 			warn("Game was instantiated with no players");
 		}
 
-		ShuffleDrawPile();
+		ShuffleDrawPile(seed);
 
-		CBitStream bs;
-		bs.write_u16(players.size());
+		// Start with a number card in the discard pile
+		for (int i = drawPile.size() - 1; i >= 0; i--)
+		{
+			u16 card = drawPile[i];
+			if (Card::isNumber(card))
+			{
+				drawPile.removeAt(i);
+				discardPile.push_back(card);
+				break;
+			}
+		}
 
 		for (uint i = 0; i < players.size(); i++)
 		{
-			CPlayer@ player = players[i];
+			u16[] hand;
 
-			u16[] cards; // TODO: Deal cards
-			hands.set(player.getUsername(), cards);
+			for (uint j = 0; j < STARTING_HAND_SIZE; j++)
+			{
+				u16 index = drawPile.size() - 1;
+				u16 card = drawPile[index];
 
-			bs.write_u16(player.getNetworkID());
+				drawPile.removeAt(index);
+				hand.push_back(card);
+			}
+
+			hands.set(players[i].getUsername(), hand);
 		}
 
 		if (isServer())
 		{
+			CBitStream bs;
+			bs.write_u32(seed);
+			bs.write_u16(players.size());
+
+			for (uint i = 0; i < players.size(); i++)
+			{
+				bs.write_u16(players[i].getNetworkID());
+			}
+
 			getRules().SendCommand(getRules().getCommandID("init game"), bs, true);
 		}
 	}
@@ -209,8 +354,13 @@ class Game
 		return turnPlayer !is null && turnPlayer is player;
 	}
 
-	bool drawCards(CPlayer@ player, u16 count)
+	bool drawCards(CPlayer@ player)
 	{
+		if (!canDrawCards(player))
+		{
+			return false;
+		}
+
 		u16[]@ hand;
 		hands.get(player.getUsername(), @hand);
 
@@ -218,6 +368,8 @@ class Game
 		{
 			return false;
 		}
+
+		u16 count = getCardsToDraw(player);
 
 		if (drawPile.size() < count)
 		{
@@ -261,6 +413,11 @@ class Game
 
 	bool playCard(CPlayer@ player, u16 card)
 	{
+		if (!canPlayCard(player, card))
+		{
+			return false;
+		}
+
 		u16[]@ hand;
 		hands.get(player.getUsername(), @hand);
 
@@ -271,12 +428,14 @@ class Game
 
 		for (int i = hand.size() - 1; i >= 0; i--)
 		{
-			if (hand[i] == card)
+			u16 handCard = hand[i];
+
+			if (Card::isEqual(handCard, card))
 			{
 				hand.removeAt(i);
 				discardPile.push_back(card);
 
-				print("Played card: " + player.getUsername() + ", " + card);
+				print("Played card: " + player.getUsername() + ", " + handCard);
 
 				if (isServer())
 				{
@@ -357,6 +516,7 @@ class Game
 		return true;
 	}
 
+	// FIXME: Achieve true determinism by only randomizing on server and syncing entire draw pile to clients
 	void ShuffleDrawPile(uint seed = Time())
 	{
 		Random random(seed);
@@ -377,7 +537,7 @@ class Game
 		if (isServer())
 		{
 			CBitStream bs;
-			bs.write_u32(random.getSeed());
+			bs.write_u32(seed);
 			getRules().SendCommand(getRules().getCommandID("shuffle draw pile"), bs, true);
 		}
 	}
@@ -393,7 +553,15 @@ class Game
 
 		for (uint i = 0; i < discardCount - 1; i++)
 		{
-			drawPile.push_back(discardPile[i]);
+			u16 card = discardPile[i];
+
+			// Remove selected colour
+			if (Card::isFlag(card, Card::Flag::Wild))
+			{
+				card &= ~0xF000;
+			}
+
+			drawPile.push_back(card);
 		}
 
 		u16 topDiscardCard = discardPile[discardCount - 1];
@@ -411,6 +579,71 @@ class Game
 		}
 
 		return true;
+	}
+
+	bool playerHasCard(CPlayer@ player, u16 card)
+	{
+		u16[] hand = getHand(player);
+
+		for (uint i = 0; i < hand.size(); i++)
+		{
+			u16 handCard = hand[i];
+
+			if (Card::isEqual(handCard, card))
+			{
+				return true;
+			}
+		}
+
+		return false;
+	}
+
+	bool canPlayCard(CPlayer@ player, u16 card)
+	{
+		if (!isPlayersTurn(player) || !playerHasCard(player, card))
+		{
+			return false;
+		}
+
+		u16 topCard = discardPile[discardPile.size() - 1];
+		return (
+			topCard & 0x07F0 == card & 0x07F0 || // Same value
+			topCard & 0xF000 == card & 0xF000 || // Same color
+			Card::isFlag(card, Card::Flag::Wild) // Wild card
+		);
+	}
+
+	bool canDrawCards(CPlayer@ player)
+	{
+		return getCardsToDraw(player) > 0;
+	}
+
+	u16 getCardsToDraw(CPlayer@ player)
+	{
+		// Not the player's turn
+		if (!isPlayersTurn(player))
+		{
+			return 0;
+		}
+
+		if (pendingAction)
+		{
+			u16 topCard = discardPile[discardPile.size() - 1];
+
+			// Pick up draw 2
+			if (Card::isValue(topCard, Card::Value::Draw2))
+			{
+				return 2;
+			}
+
+			// Pick up draw 4
+			if (Card::isValue(topCard, Card::Value::Draw4))
+			{
+				return 4;
+			}
+		}
+
+		return 1;
 	}
 }
 
