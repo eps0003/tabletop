@@ -129,7 +129,7 @@ class Game
 
 	private bool pendingAction = false;
 
-	private u16 turnIndex = 0;
+	private CPlayer@ turnPlayer;
 	private s8 turnDirection = 1;
 
 	Game(CPlayer@[] players, uint seed = Time())
@@ -141,6 +141,10 @@ class Game
 		if (players.empty())
 		{
 			warn("Game was instantiated with no players");
+		}
+		else
+		{
+			@turnPlayer = players[0];
 		}
 
 		ShuffleDrawPile(seed);
@@ -209,7 +213,7 @@ class Game
 		if (!deserialiseCards(bs, drawPile)) return;
 		if (!deserialiseCards(bs, discardPile)) return;
 
-		if (!bs.saferead_u16(turnIndex)) return;
+		if (!saferead_player(bs, @turnPlayer)) return;
 		if (!bs.saferead_u16(turnDirection)) return;
 
 		print("Synced game: " + getLocalPlayer().getUsername());
@@ -234,7 +238,7 @@ class Game
 		SerialiseCards(bs, drawPile);
 		SerialiseCards(bs, discardPile);
 
-		bs.write_u16(turnIndex);
+		bs.write_u16(turnPlayer.getNetworkID());
 		bs.write_s8(turnDirection);
 
 		getRules().SendCommand(getRules().getCommandID("sync game"), bs, player);
@@ -276,7 +280,7 @@ class Game
 
 	CPlayer@ getTurnPlayer()
 	{
-		return players.empty() ? null : players[turnIndex];
+		return turnPlayer;
 	}
 
 	u16[] getHand(CPlayer@ player)
@@ -305,6 +309,11 @@ class Game
 			{
 				discardHand(player);
 
+				if (player is turnPlayer)
+				{
+					NextTurn();
+				}
+
 				players.removeAt(i);
 				hands.delete(player.getUsername());
 
@@ -324,14 +333,23 @@ class Game
 
 	void NextTurn()
 	{
-		turnIndex = (int(turnIndex) + turnDirection) % players.size();
-
-		print("Next turn: " + getTurnPlayer().getUsername());
-
-		if (isServer())
+		for (uint i = 0; i < players.size(); i++)
 		{
-			CBitStream bs;
-			getRules().SendCommand(getRules().getCommandID("next turn"), bs, true);
+			if (players[i] is turnPlayer)
+			{
+				u16 turnIndex = (i + turnDirection) % players.size();
+				@turnPlayer = players[turnIndex];
+
+				print("Next turn: " + turnPlayer.getUsername());
+
+				if (isServer())
+				{
+					CBitStream bs;
+					getRules().SendCommand(getRules().getCommandID("next turn"), bs, true);
+				}
+
+				break;
+			}
 		}
 	}
 
@@ -350,7 +368,6 @@ class Game
 
 	bool isPlayersTurn(CPlayer@ player)
 	{
-		CPlayer@ turnPlayer = getTurnPlayer();
 		return turnPlayer !is null && turnPlayer is player;
 	}
 
@@ -452,7 +469,7 @@ class Game
 		return false;
 	}
 
-	bool tradeHands(CPlayer@ player1, CPlayer@ player2)
+	bool swapHands(CPlayer@ player1, CPlayer@ player2)
 	{
 		u16[] player1Hand;
 		hands.get(player1.getUsername(), @player1Hand);
@@ -473,14 +490,14 @@ class Game
 		hands.set(player1.getUsername(), player2Hand);
 		hands.set(player2.getUsername(), player1Hand);
 
-		print("Traded hands: " + player1.getUsername() + ", " + player2.getUsername());
+		print("Swapped hands: " + player1.getUsername() + ", " + player2.getUsername());
 
 		if (isServer())
 		{
 			CBitStream bs;
 			bs.write_u16(player1.getNetworkID());
 			bs.write_u16(player2.getNetworkID());
-			getRules().SendCommand(getRules().getCommandID("trade hands"), bs, true);
+			getRules().SendCommand(getRules().getCommandID("swap hands"), bs, true);
 		}
 
 		return true;

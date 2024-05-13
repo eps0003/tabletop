@@ -84,9 +84,9 @@ class CardPlayCommand : ChatCommand
 			return;
 		};
 
-		string message = getTranslatedString("{PLAYER} played a {CARD} card")
+		string message = getTranslatedString("{PLAYER} played a {CARD}")
 			.replace("{PLAYER}", player.getUsername())
-			.replace("{CARD}", "" + card);
+			.replace("{CARD}", Card::getName(card));
 		server_AddToChat(message, ConsoleColour::INFO);
 
 		game.NextTurn();

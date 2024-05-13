@@ -19,7 +19,7 @@ void onInit(CRules@ this)
 	this.addCommandID("reverse direction");
 	this.addCommandID("draw cards");
 	this.addCommandID("play card");
-	this.addCommandID("trade hands");
+	this.addCommandID("swap hands");
 	this.addCommandID("discard hand");
 	this.addCommandID("shuffle draw pile");
 	this.addCommandID("replenish draw pile");
@@ -115,7 +115,7 @@ void onCommand(CRules@ this, u8 cmd, CBitStream@ params)
 
 		game.playCard(player, card);
 	}
-	else if (!isServer() && cmd == this.getCommandID("trade hands"))
+	else if (!isServer() && cmd == this.getCommandID("swap hands"))
 	{
 		Game@ game = GameManager::get();
 		if (game is null) return;
@@ -126,7 +126,7 @@ void onCommand(CRules@ this, u8 cmd, CBitStream@ params)
 		CPlayer@ player2;
 		if (!saferead_player(params, @player2)) return;
 
-		game.tradeHands(player1, player2);
+		game.swapHands(player1, player2);
 	}
 	else if (!isServer() && cmd == this.getCommandID("discard hand"))
 	{
