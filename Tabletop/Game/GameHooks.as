@@ -22,7 +22,6 @@ void onInit(CRules@ this)
 	this.addCommandID("swap hands");
 	this.addCommandID("discard hand");
 	this.addCommandID("shuffle draw pile");
-	this.addCommandID("replenish draw pile");
 
 	ChatCommands::RegisterCommand(QueueJoinCommand());
 	ChatCommands::RegisterCommand(QueueLeaveCommand());
@@ -147,13 +146,6 @@ void onCommand(CRules@ this, u8 cmd, CBitStream@ params)
 		if (!params.saferead_u32(seed)) return;
 
 		game.ShuffleDrawPile(seed);
-	}
-	else if (!isServer() && cmd == this.getCommandID("replenish draw pile"))
-	{
-		Game@ game = GameManager::get();
-		if (game is null) return;
-
-		game.replenishDrawPile();
 	}
 }
 

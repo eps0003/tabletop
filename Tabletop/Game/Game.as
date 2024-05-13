@@ -559,7 +559,7 @@ class Game
 		}
 	}
 
-	bool replenishDrawPile()
+	private bool replenishDrawPile()
 	{
 		uint discardCount = discardPile.size();
 
@@ -586,14 +586,6 @@ class Game
 		discardPile.push_back(topDiscardCard);
 
 		print("Replenished draw pile: +" + (discardCount - 1) + plural(" card", " cards", discardCount - 1));
-
-		if (isServer())
-		{
-			CBitStream bs;
-			getRules().SendCommand(getRules().getCommandID("replenish draw pile"), bs, true);
-
-			ShuffleDrawPile();
-		}
 
 		return true;
 	}
