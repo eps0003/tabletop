@@ -136,7 +136,7 @@ class Game
 	{
 		this.players = players;
 
-		print("Initialised game: " + players.size() + plural(" player", " players", players.size()));
+		print("Started game: " + players.size() + plural(" player", " players", players.size()));
 
 		if (players.empty())
 		{
@@ -300,18 +300,25 @@ class Game
 		return discardPile;
 	}
 
-	void RemovePlayer(CPlayer@ player)
+	void RemovePlayer(CPlayer@ player, bool sync = true)
 	{
 		for (uint i = 0; i < players.size(); i++)
 		{
 			CPlayer@ otherPlayer = players[i];
 			if (player is otherPlayer)
 			{
-				discardHand(player);
+				u16[]@ hand;
+				hands.get(player.getUsername(), @hand);
 
-				if (player is turnPlayer)
+				// Discard hand to the bottom of the discard pile
+				for (int i = hand.size() - 1; i >= 0; i--)
 				{
-					NextTurn();
+					discardPile.insertAt(0, hand[i]);
+				}
+
+				if (player is turnPlayer && players.size() > 1)
+				{
+					NextTurn(sync);
 				}
 
 				players.removeAt(i);
@@ -321,9 +328,17 @@ class Game
 
 				if (isServer())
 				{
-					CBitStream bs;
-					bs.write_u16(player.getNetworkID());
-					getRules().SendCommand(getRules().getCommandID("remove player"), bs, true);
+					if (sync)
+					{
+						CBitStream bs;
+						bs.write_u16(player.getNetworkID());
+						getRules().SendCommand(getRules().getCommandID("remove player"), bs, true);
+					}
+
+					if (players.size() == 0)
+					{
+						End();
+					}
 				}
 
 				break;
@@ -331,7 +346,7 @@ class Game
 		}
 	}
 
-	void NextTurn()
+	void NextTurn(bool sync = true)
 	{
 		for (uint i = 0; i < players.size(); i++)
 		{
@@ -342,7 +357,7 @@ class Game
 
 				print("Next turn: " + turnPlayer.getUsername());
 
-				if (isServer())
+				if (isServer() && sync)
 				{
 					CBitStream bs;
 					getRules().SendCommand(getRules().getCommandID("next turn"), bs, true);
@@ -503,36 +518,6 @@ class Game
 		return true;
 	}
 
-	bool discardHand(CPlayer@ player)
-	{
-		u16[]@ hand;
-		hands.get(player.getUsername(), @hand);
-
-		if (hand is null)
-		{
-			return false;
-		}
-
-		for (int i = hand.size() - 1; i >= 0; i--)
-		{
-			// Discard to the bottom of the discard pile
-			discardPile.insertAt(0, hand[i]);
-		}
-
-		hand.clear();
-
-		print("Discarded hand: " + player.getUsername());
-
-		if (isServer())
-		{
-			CBitStream bs;
-			bs.write_u16(player.getNetworkID());
-			getRules().SendCommand(getRules().getCommandID("discard hand"), bs, true);
-		}
-
-		return true;
-	}
-
 	// FIXME: Achieve true determinism by only randomizing on server and syncing entire draw pile to clients
 	void ShuffleDrawPile(uint seed = Time())
 	{
@@ -653,6 +638,19 @@ class Game
 		}
 
 		return 1;
+	}
+
+	void End()
+	{
+		print("Ended game");
+
+		if (isServer())
+		{
+			CBitStream bs;
+			getRules().SendCommand(getRules().getCommandID("end game"), bs, true);
+		}
+
+		GameManager::Set(null);
 	}
 }
 

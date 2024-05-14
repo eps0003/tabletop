@@ -5,7 +5,7 @@
 #include "QueueJoinCommand.as"
 #include "QueueLeaveCommand.as"
 #include "GameStartCommand.as"
-#include "TurnPrevCommand.as"
+#include "GameEndCommand.as"
 #include "TurnNextCommand.as"
 #include "CardDrawCommand.as"
 #include "CardPlayCommand.as"
@@ -14,19 +14,19 @@ void onInit(CRules@ this)
 {
 	this.addCommandID("init game");
 	this.addCommandID("sync game");
+	this.addCommandID("end game");
 	this.addCommandID("remove player");
 	this.addCommandID("next turn");
 	this.addCommandID("reverse direction");
 	this.addCommandID("draw cards");
 	this.addCommandID("play card");
 	this.addCommandID("swap hands");
-	this.addCommandID("discard hand");
 	this.addCommandID("shuffle draw pile");
 
 	ChatCommands::RegisterCommand(QueueJoinCommand());
 	ChatCommands::RegisterCommand(QueueLeaveCommand());
 	ChatCommands::RegisterCommand(GameStartCommand());
-	ChatCommands::RegisterCommand(TurnPrevCommand());
+	ChatCommands::RegisterCommand(GameEndCommand());
 	ChatCommands::RegisterCommand(TurnNextCommand());
 	ChatCommands::RegisterCommand(CardDrawCommand());
 	ChatCommands::RegisterCommand(CardPlayCommand());
@@ -38,6 +38,15 @@ void onNewPlayerJoin(CRules@ this, CPlayer@ player)
 	if (game !is null)
 	{
 		game.Sync(player);
+	}
+}
+
+void onPlayerLeave(CRules@ this, CPlayer@ player)
+{
+	Game@ game = GameManager::get();
+	if (game !is null)
+	{
+		game.RemovePlayer(player, false);
 	}
 }
 
@@ -66,6 +75,13 @@ void onCommand(CRules@ this, u8 cmd, CBitStream@ params)
 	else if (!isServer() && cmd == this.getCommandID("sync game"))
 	{
 		GameManager::Set(Game(params));
+	}
+	else if (!isServer() && cmd == this.getCommandID("end game"))
+	{
+		Game@ game = GameManager::get();
+		if (game is null) return;
+
+		game.End();
 	}
 	else if (!isServer() && cmd == this.getCommandID("remove player"))
 	{
@@ -126,16 +142,6 @@ void onCommand(CRules@ this, u8 cmd, CBitStream@ params)
 		if (!saferead_player(params, @player2)) return;
 
 		game.swapHands(player1, player2);
-	}
-	else if (!isServer() && cmd == this.getCommandID("discard hand"))
-	{
-		Game@ game = GameManager::get();
-		if (game is null) return;
-
-		CPlayer@ player;
-		if (!saferead_player(params, @player)) return;
-
-		game.discardHand(player);
 	}
 	else if (!isServer() && cmd == this.getCommandID("shuffle draw pile"))
 	{
