@@ -25,17 +25,10 @@ class CardDrawCommand : ChatCommand
 			return;
 		}
 
-		u16 cards = game.getCardsToDraw(player);
+		game.DrawCard();
 
-		if (!game.drawCards(player))
-		{
-			server_AddToChat(getTranslatedString("You are unable to draw cards"), ConsoleColour::ERROR, player);
-			return;
-		};
-
-		string message = getTranslatedString("{PLAYER} drew {CARDS} " + plural("card", "cards", cards))
-			.replace("{PLAYER}", player.getUsername())
-			.replace("{CARDS}", "" + cards);
+		string message = getTranslatedString("{PLAYER} drew a card")
+			.replace("{PLAYER}", player.getUsername());
 		server_AddToChat(message, ConsoleColour::INFO);
 
 		game.NextTurn();

@@ -38,5 +38,5 @@ bool saferead_player(CBitStream@ bs, CPlayer@ &out player)
 
 string plural(string singular, string plural, float value)
 {
-	return value == 1 ? singular : plural;
+	return Maths::Abs(value) == 1 ? singular : plural;
 }

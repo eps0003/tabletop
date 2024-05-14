@@ -386,35 +386,10 @@ class Game
 		return turnPlayer !is null && turnPlayer is player;
 	}
 
-	bool drawCards(CPlayer@ player)
+	void DrawCard()
 	{
-		if (!canDrawCards(player))
-		{
-			return false;
-		}
-
 		u16[]@ hand;
-		hands.get(player.getUsername(), @hand);
-
-		if (hand is null)
-		{
-			return false;
-		}
-
-		u16 count = getCardsToDraw(player);
-
-		if (drawPile.size() < count)
-		{
-			if (!replenishDrawPile())
-			{
-				return false;
-			}
-
-			if (drawPile.size() < count)
-			{
-				return false;
-			}
-		}
+		hands.get(turnPlayer.getUsername(), @hand);
 
 		uint index = drawPile.size() - 1;
 		u16 card = drawPile[index];
@@ -422,25 +397,23 @@ class Game
 		drawPile.removeAt(index);
 		hand.push_back(card);
 
-		print("Drew " + plural("card", "cards", count) + ": " + player.getUsername() + ", +" + count + plural(" card", " cards", count));
+		print("Drew card: " + turnPlayer.getUsername());
 
 		if (isServer())
 		{
 			CBitStream bs;
-			bs.write_u16(player.getNetworkID());
-			bs.write_u16(count);
-			getRules().SendCommand(getRules().getCommandID("draw cards"), bs, true);
+			getRules().SendCommand(getRules().getCommandID("draw card"), bs, true);
 		}
 
 		if (drawPile.empty())
 		{
-			if (!replenishDrawPile())
+			ReplenishDrawPile();
+
+			if (drawPile.empty())
 			{
-				warn("No more cards in the draw pile");
+				warn("No cards in the draw pile when there should be at least one");
 			}
 		}
-
-		return true;
 	}
 
 	bool playCard(CPlayer@ player, u16 card)
@@ -544,16 +517,12 @@ class Game
 		}
 	}
 
-	private bool replenishDrawPile()
+	private void ReplenishDrawPile()
 	{
-		uint discardCount = discardPile.size();
+		int replenishCount = discardPile.size() - 1;
+		if (replenishCount <= 0) return;
 
-		if (discardCount < 2)
-		{
-			return false;
-		}
-
-		for (uint i = 0; i < discardCount - 1; i++)
+		for (uint i = 0; i < replenishCount; i++)
 		{
 			u16 card = discardPile[i];
 
@@ -566,13 +535,11 @@ class Game
 			drawPile.push_back(card);
 		}
 
-		u16 topDiscardCard = discardPile[discardCount - 1];
+		u16 topDiscardCard = discardPile[replenishCount];
 		discardPile.clear();
 		discardPile.push_back(topDiscardCard);
 
-		print("Replenished draw pile: +" + (discardCount - 1) + plural(" card", " cards", discardCount - 1));
-
-		return true;
+		print("Replenished draw pile: +" + replenishCount + plural(" card", " cards", replenishCount));
 	}
 
 	bool playerHasCard(CPlayer@ player, u16 card)
@@ -605,39 +572,6 @@ class Game
 			topCard & 0xF000 == card & 0xF000 || // Same color
 			Card::isFlag(card, Card::Flag::Wild) // Wild card
 		);
-	}
-
-	bool canDrawCards(CPlayer@ player)
-	{
-		return getCardsToDraw(player) > 0;
-	}
-
-	u16 getCardsToDraw(CPlayer@ player)
-	{
-		// Not the player's turn
-		if (!isPlayersTurn(player))
-		{
-			return 0;
-		}
-
-		if (pendingAction)
-		{
-			u16 topCard = discardPile[discardPile.size() - 1];
-
-			// Pick up draw 2
-			if (Card::isValue(topCard, Card::Value::Draw2))
-			{
-				return 2;
-			}
-
-			// Pick up draw 4
-			if (Card::isValue(topCard, Card::Value::Draw4))
-			{
-				return 4;
-			}
-		}
-
-		return 1;
 	}
 
 	void End()
