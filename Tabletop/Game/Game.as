@@ -214,9 +214,9 @@ class Game
 		if (!deserialiseCards(bs, discardPile)) return;
 
 		if (!saferead_player(bs, @turnPlayer)) return;
-		if (!bs.saferead_u16(turnDirection)) return;
+		if (!bs.saferead_s8(turnDirection)) return;
 
-		print("Synced game: " + getLocalPlayer().getUsername());
+		print("Deserialized game");
 	}
 
 	void Sync(CPlayer@ player)
