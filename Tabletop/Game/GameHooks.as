@@ -132,7 +132,7 @@ void onCommand(CRules@ this, u8 cmd, CBitStream@ params)
 		u16 card;
 		if (!params.saferead_u16(card)) return;
 
-		game.playCard(player, card);
+		game.PlayCard(player, card);
 	}
 	else if (!isServer() && cmd == this.getCommandID("swap hands"))
 	{

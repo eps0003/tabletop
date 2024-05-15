@@ -428,6 +428,8 @@ class Game
 
 	void DrawCard()
 	{
+		if (!ruleset.canDrawCard(this, turnPlayer)) return;
+
 		u16[]@ hand;
 		hands.get(turnPlayer.getUsername(), @hand);
 
@@ -460,20 +462,12 @@ class Game
 		ruleset.OnDrawCard(this, turnPlayer, card);
 	}
 
-	bool playCard(CPlayer@ player, u16 card)
+	void PlayCard(CPlayer@ player, u16 card)
 	{
-		if (!canPlayCard(player, card))
-		{
-			return false;
-		}
+		if (!canPlayCard(player, card)) return;
 
 		u16[]@ hand;
 		hands.get(player.getUsername(), @hand);
-
-		if (hand is null)
-		{
-			return false;
-		}
 
 		for (int i = hand.size() - 1; i >= 0; i--)
 		{
@@ -494,12 +488,8 @@ class Game
 
 				print("Played card: " + player.getUsername() + ", " + handCard);
 				ruleset.OnPlayCard(this, turnPlayer, card);
-
-				return true;
 			}
 		}
-
-		return false;
 	}
 
 	bool swapHands(CPlayer@ player1, CPlayer@ player2)
@@ -605,12 +595,8 @@ class Game
 			return false;
 		}
 
-		u16 topCard = discardPile[discardPile.size() - 1];
-		return (
-			topCard & 0x07F0 == card & 0x07F0 || // Same value
-			topCard & 0xF000 == card & 0xF000 || // Same color
-			Card::isFlag(card, Card::Flag::Wild) // Wild card
-		);
+		u16 discardPileCard = discardPile[discardPile.size() - 1];
+		return ruleset.canPlayCard(this, player, card, discardPileCard);
 	}
 
 	void End()

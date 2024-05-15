@@ -78,10 +78,6 @@ class CardPlayCommand : ChatCommand
 			}
 		}
 
-		if (!game.playCard(player, card))
-		{
-			server_AddToChat(getTranslatedString("You are unable to play this card"), ConsoleColour::ERROR, player);
-			return;
-		};
+		game.PlayCard(player, card);
 	}
 }

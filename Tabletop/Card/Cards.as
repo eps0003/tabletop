@@ -67,9 +67,19 @@ namespace Card
 		return card & 0x07F0 == value;
 	}
 
+	bool isSameValue(u16 card1, u16 card2)
+	{
+		return card1 & 0x07F0 == card2 & 0x07F0;
+	}
+
 	bool isColor(u16 card, Card::Color color)
 	{
 		return card & 0xF000 == color;
+	}
+
+	bool isSameColor(u16 card1, u16 card2)
+	{
+		return card1 & 0xF000 == card2 & 0xF000;
 	}
 
 	bool isFlag(u16 card, Card::Flag flag)

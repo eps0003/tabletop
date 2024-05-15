@@ -29,4 +29,13 @@ class OfficialRuleset : Ruleset
 			}
 		}
 	}
+
+	bool canPlayCard(Game@ game, CPlayer@ player, u16 card, u16 discardPileCard)
+	{
+		return (
+			Card::isSameColor(card, discardPileCard) ||
+			Card::isSameValue(card, discardPileCard) ||
+			Card::isFlag(card, Card::Flag::Wild)
+		);
+	}
 }
