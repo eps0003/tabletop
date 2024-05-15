@@ -83,12 +83,5 @@ class CardPlayCommand : ChatCommand
 			server_AddToChat(getTranslatedString("You are unable to play this card"), ConsoleColour::ERROR, player);
 			return;
 		};
-
-		string message = getTranslatedString("{PLAYER} played a {CARD}")
-			.replace("{PLAYER}", player.getUsername())
-			.replace("{CARD}", Card::getName(card));
-		server_AddToChat(message, ConsoleColour::INFO);
-
-		game.NextTurn();
 	}
 }

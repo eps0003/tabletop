@@ -20,9 +20,5 @@ class GameEndCommand : ChatCommand
 		}
 
 		game.End();
-
-		string message = getTranslatedString("The game has been ended by {PLAYER}")
-			.replace("{PLAYER}", player.getUsername());
-		server_AddToChat(message, ConsoleColour::GAME);
 	}
 }

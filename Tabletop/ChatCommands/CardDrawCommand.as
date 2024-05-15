@@ -26,11 +26,5 @@ class CardDrawCommand : ChatCommand
 		}
 
 		game.DrawCard();
-
-		string message = getTranslatedString("{PLAYER} drew a card")
-			.replace("{PLAYER}", player.getUsername());
-		server_AddToChat(message, ConsoleColour::INFO);
-
-		game.NextTurn();
 	}
 }

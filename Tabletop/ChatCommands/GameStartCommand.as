@@ -24,9 +24,5 @@ class GameStartCommand : ChatCommand
 
 		CPlayer@[] players = queue.remove(MAXIMUM_PLAYER_COUNT);
 		GameManager::Set(Game(players));
-
-		string message = getTranslatedString("A game has started with {PLAYERS} players!")
-			.replace("{PLAYERS}", "" + players.size());
-		server_AddToChat(message, ConsoleColour::GAME);
 	}
 }

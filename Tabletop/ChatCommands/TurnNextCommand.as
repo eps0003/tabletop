@@ -20,9 +20,5 @@ class TurnNextCommand : ChatCommand
 		}
 
 		game.NextTurn();
-
-		string message = getTranslatedString("{PLAYER}'s turn")
-			.replace("{PLAYER}", game.getTurnPlayer().getUsername());
-		server_AddToChat(message, ConsoleColour::INFO);
 	}
 }

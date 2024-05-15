@@ -402,6 +402,9 @@ class Game
 		if (isServer())
 		{
 			CBitStream bs;
+			// Optional
+			bs.write_u16(turnPlayer.getNetworkID());
+			bs.write_u16(card);
 			getRules().SendCommand(getRules().getCommandID("draw card"), bs, true);
 		}
 
