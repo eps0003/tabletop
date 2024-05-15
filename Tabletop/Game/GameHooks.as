@@ -17,11 +17,11 @@ void onInit(CRules@ this)
 	this.addCommandID("end game");
 	this.addCommandID("remove player");
 	this.addCommandID("next turn");
+	this.addCommandID("skip turn");
 	this.addCommandID("reverse direction");
 	this.addCommandID("draw card");
 	this.addCommandID("play card");
 	this.addCommandID("swap hands");
-	this.addCommandID("shuffle draw pile");
 
 	ChatCommands::RegisterCommand(QueueJoinCommand());
 	ChatCommands::RegisterCommand(QueueLeaveCommand());
@@ -70,7 +70,7 @@ void onCommand(CRules@ this, u8 cmd, CBitStream@ params)
 			players.push_back(player);
 		}
 
-		GameManager::Set(Game(players, seed));
+		GameManager::Set(Game(players, OfficialRuleset(), seed));
 	}
 	else if (!isServer() && cmd == this.getCommandID("sync game"))
 	{
@@ -99,6 +99,13 @@ void onCommand(CRules@ this, u8 cmd, CBitStream@ params)
 		if (game is null) return;
 
 		game.NextTurn();
+	}
+	else if (!isServer() && cmd == this.getCommandID("skip turn"))
+	{
+		Game@ game = GameManager::get();
+		if (game is null) return;
+
+		game.SkipTurn();
 	}
 	else if (!isServer() && cmd == this.getCommandID("reverse direction"))
 	{
@@ -139,16 +146,6 @@ void onCommand(CRules@ this, u8 cmd, CBitStream@ params)
 		if (!saferead_player(params, @player2)) return;
 
 		game.swapHands(player1, player2);
-	}
-	else if (!isServer() && cmd == this.getCommandID("shuffle draw pile"))
-	{
-		Game@ game = GameManager::get();
-		if (game is null) return;
-
-		u32 seed;
-		if (!params.saferead_u32(seed)) return;
-
-		game.ShuffleDrawPile(seed);
 	}
 }
 

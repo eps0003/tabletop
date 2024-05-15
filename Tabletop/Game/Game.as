@@ -1,4 +1,5 @@
 #include "Cards.as"
+#include "OfficialRuleset.as"
 #include "Utilities.as"
 
 const u16 STARTING_HAND_SIZE = 7;
@@ -7,6 +8,8 @@ class Game
 {
 	private CPlayer@[] players;
 	private dictionary hands;
+
+	Ruleset@ ruleset;
 
 	private u16[] drawPile = {
 		Card::Color::Red | Card::Value::Zero | 0,
@@ -132,22 +135,23 @@ class Game
 	private CPlayer@ turnPlayer;
 	private s8 turnDirection = 1;
 
-	Game(CPlayer@[] players, uint seed = Time())
+	Game(CPlayer@[] players, Ruleset@ ruleset, uint seed = Time())
 	{
 		this.players = players;
-
-		print("Started game: " + players.size() + plural(" player", " players", players.size()));
+		@this.ruleset = ruleset;
 
 		if (players.empty())
 		{
-			warn("Game was instantiated with no players");
+			warn("Started game: 0 players");
 		}
 		else
 		{
+			print("Started game: " + players.size() + plural(" player", " players", players.size()));
+
 			@turnPlayer = players[0];
 		}
 
-		ShuffleDrawPile(seed);
+		ShuffleCards(drawPile, seed);
 
 		// Start with a number card in the discard pile
 		for (int i = drawPile.size() - 1; i >= 0; i--)
@@ -190,6 +194,8 @@ class Game
 
 			getRules().SendCommand(getRules().getCommandID("init game"), bs, true);
 		}
+
+		ruleset.OnStart(this, players);
 	}
 
 	Game(CBitStream@ bs)
@@ -217,6 +223,7 @@ class Game
 		if (!bs.saferead_s8(turnDirection)) return;
 
 		print("Deserialized game");
+		ruleset.OnSync(this, getLocalPlayer());
 	}
 
 	void Sync(CPlayer@ player)
@@ -244,6 +251,7 @@ class Game
 		getRules().SendCommand(getRules().getCommandID("sync game"), bs, player);
 
 		print("Synced game: " + player.getUsername());
+		ruleset.OnSync(this, player);
 	}
 
 	private void SerialiseCards(CBitStream@ bs, u16[] cards)
@@ -324,8 +332,6 @@ class Game
 				players.removeAt(i);
 				hands.delete(player.getUsername());
 
-				print("Removed player: " + player.getUsername());
-
 				if (isServer())
 				{
 					if (sync)
@@ -334,11 +340,14 @@ class Game
 						bs.write_u16(player.getNetworkID());
 						getRules().SendCommand(getRules().getCommandID("remove player"), bs, true);
 					}
+				}
 
-					if (players.size() == 0)
-					{
-						End();
-					}
+				print("Removed player: " + player.getUsername());
+				ruleset.OnLeave(this, player);
+
+				if (isServer() && players.size() == 0)
+				{
+					End();
 				}
 
 				break;
@@ -355,13 +364,43 @@ class Game
 				u16 turnIndex = (i + turnDirection) % players.size();
 				@turnPlayer = players[turnIndex];
 
-				print("Next turn: " + turnPlayer.getUsername());
-
 				if (isServer() && sync)
 				{
 					CBitStream bs;
 					getRules().SendCommand(getRules().getCommandID("next turn"), bs, true);
 				}
+
+				print("Next turn: " + turnPlayer.getUsername());
+				ruleset.OnNextTurn(this, players[i], turnPlayer);
+
+				break;
+			}
+		}
+	}
+
+	void SkipTurn()
+	{
+		for (uint i = 0; i < players.size(); i++)
+		{
+			if (players[i] is turnPlayer)
+			{
+				u16 skippedTurnIndex = (i + turnDirection) % players.size();
+				CPlayer@ skippedTurnPlayer = players[skippedTurnIndex];
+
+				u16 turnIndex = (i + turnDirection * 2) % players.size();
+				@turnPlayer = players[turnIndex];
+
+				if (isServer())
+				{
+					CBitStream bs;
+					getRules().SendCommand(getRules().getCommandID("skip turn"), bs, true);
+				}
+
+				print("Skip turn: " + skippedTurnPlayer.getUsername());
+				ruleset.OnSkipTurn(this, skippedTurnPlayer);
+
+				print("Next turn: " + turnPlayer.getUsername());
+				ruleset.OnNextTurn(this, players[i], turnPlayer);
 
 				break;
 			}
@@ -372,13 +411,14 @@ class Game
 	{
 		turnDirection *= -1;
 
-		print("Reversed direction: " + turnDirection);
-
 		if (isServer())
 		{
 			CBitStream bs;
 			getRules().SendCommand(getRules().getCommandID("reverse direction"), bs, true);
 		}
+
+		print("Reversed direction: " + turnDirection);
+		ruleset.OnReverseDirection(this, turnDirection);
 	}
 
 	bool isPlayersTurn(CPlayer@ player)
@@ -396,8 +436,6 @@ class Game
 
 		drawPile.removeAt(index);
 		hand.push_back(card);
-
-		print("Drew card: " + turnPlayer.getUsername());
 
 		if (isServer())
 		{
@@ -417,6 +455,9 @@ class Game
 				warn("No cards in the draw pile when there should be at least one");
 			}
 		}
+
+		print("Drew card: " + turnPlayer.getUsername());
+		ruleset.OnDrawCard(this, turnPlayer, card);
 	}
 
 	bool playCard(CPlayer@ player, u16 card)
@@ -443,8 +484,6 @@ class Game
 				hand.removeAt(i);
 				discardPile.push_back(card);
 
-				print("Played card: " + player.getUsername() + ", " + handCard);
-
 				if (isServer())
 				{
 					CBitStream bs;
@@ -452,6 +491,9 @@ class Game
 					bs.write_u16(card);
 					getRules().SendCommand(getRules().getCommandID("play card"), bs, true);
 				}
+
+				print("Played card: " + player.getUsername() + ", " + handCard);
+				ruleset.OnPlayCard(this, turnPlayer, card);
 
 				return true;
 			}
@@ -481,8 +523,6 @@ class Game
 		hands.set(player1.getUsername(), player2Hand);
 		hands.set(player2.getUsername(), player1Hand);
 
-		print("Swapped hands: " + player1.getUsername() + ", " + player2.getUsername());
-
 		if (isServer())
 		{
 			CBitStream bs;
@@ -491,33 +531,29 @@ class Game
 			getRules().SendCommand(getRules().getCommandID("swap hands"), bs, true);
 		}
 
+		print("Swapped hands: " + player1.getUsername() + ", " + player2.getUsername());
+		ruleset.OnSwapHands(this, player1, player2);
+
 		return true;
 	}
 
 	// FIXME: Achieve true determinism by only randomizing on server and syncing entire draw pile to clients
-	void ShuffleDrawPile(uint seed = Time())
+	void ShuffleCards(u16[]@ cards, uint seed = Time())
 	{
 		Random random(seed);
 
 		// Durstenfeld shuffle
 		// https://stackoverflow.com/a/12646864
-		for (uint i = drawPile.size() - 1; i > 0; i--)
+		for (uint i = cards.size() - 1; i > 0; i--)
 		{
 			uint j = random.NextRanged(i + 1);
 
-			u16 temp = drawPile[i];
-			drawPile[i] = drawPile[j];
-			drawPile[j] = temp;
+			u16 temp = cards[i];
+			cards[i] = cards[j];
+			cards[j] = temp;
 		}
 
-		print("Shuffled draw pile: " + seed + " seed");
-
-		if (isServer())
-		{
-			CBitStream bs;
-			bs.write_u32(seed);
-			getRules().SendCommand(getRules().getCommandID("shuffle draw pile"), bs, true);
-		}
+		print("Shuffled cards: " + seed + " seed");
 	}
 
 	private void ReplenishDrawPile()
@@ -579,13 +615,14 @@ class Game
 
 	void End()
 	{
-		print("Ended game");
-
 		if (isServer())
 		{
 			CBitStream bs;
 			getRules().SendCommand(getRules().getCommandID("end game"), bs, true);
 		}
+
+		print("Ended game");
+		ruleset.OnEnd(this);
 
 		GameManager::Set(null);
 	}

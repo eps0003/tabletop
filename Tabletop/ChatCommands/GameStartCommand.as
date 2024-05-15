@@ -23,6 +23,6 @@ class GameStartCommand : ChatCommand
 		}
 
 		CPlayer@[] players = queue.remove(MAXIMUM_PLAYER_COUNT);
-		GameManager::Set(Game(players));
+		GameManager::Set(Game(players, OfficialRuleset()));
 	}
 }
