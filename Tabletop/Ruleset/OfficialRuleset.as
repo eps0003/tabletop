@@ -30,8 +30,11 @@ class OfficialRuleset : Ruleset
 		}
 	}
 
-	bool canPlayCard(Game@ game, CPlayer@ player, u16 card, u16 discardPileCard)
+	bool canPlayCard(Game@ game, CPlayer@ player, u16 card)
 	{
+		u16[] discardPile = game.getDiscardPile();
+		u16 discardPileCard = discardPile[discardPile.size() - 1];
+
 		return (
 			Card::isSameColor(card, discardPileCard) ||
 			Card::isSameValue(card, discardPileCard) ||

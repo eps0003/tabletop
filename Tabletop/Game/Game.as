@@ -448,16 +448,6 @@ class Game
 			getRules().SendCommand(getRules().getCommandID("draw card"), bs, true);
 		}
 
-		if (drawPile.empty())
-		{
-			ReplenishDrawPile();
-
-			if (drawPile.empty())
-			{
-				warn("No cards in the draw pile when there should be at least one");
-			}
-		}
-
 		print("Drew card: " + turnPlayer.getUsername());
 		ruleset.OnDrawCard(this, turnPlayer, card);
 	}
@@ -568,7 +558,14 @@ class Game
 		discardPile.clear();
 		discardPile.push_back(topDiscardCard);
 
+		if (isServer())
+		{
+			CBitStream bs;
+			getRules().SendCommand(getRules().getCommandID("replenish draw pile"), bs, true);
+		}
+
 		print("Replenished draw pile: +" + replenishCount + plural(" card", " cards", replenishCount));
+		ruleset.OnReplenishDrawPile(this);
 	}
 
 	bool playerHasCard(CPlayer@ player, u16 card)
@@ -595,8 +592,7 @@ class Game
 			return false;
 		}
 
-		u16 discardPileCard = discardPile[discardPile.size() - 1];
-		return ruleset.canPlayCard(this, player, card, discardPileCard);
+		return ruleset.canPlayCard(this, player, card);
 	}
 
 	void End()

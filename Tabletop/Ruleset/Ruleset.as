@@ -15,6 +15,8 @@ class Ruleset
 	void OnSkipTurn(Game@ game, CPlayer@ skippedPlayer) {}
 	void OnReverseDirection(Game@ game, s8 direction) {}
 
-	bool canPlayCard(Game@ game, CPlayer@ player, u16 card, u16 discardPileCard) { return true; }
+	void OnReplenishDrawPile(Game@ game) {}
+
+	bool canPlayCard(Game@ game, CPlayer@ player, u16 card) { return true; }
 	bool canDrawCard(Game@ game, CPlayer@ player) { return true; }
 }

@@ -22,6 +22,7 @@ void onInit(CRules@ this)
 	this.addCommandID("draw card");
 	this.addCommandID("play card");
 	this.addCommandID("swap hands");
+	this.addCommandID("replenish draw pile");
 
 	ChatCommands::RegisterCommand(QueueJoinCommand());
 	ChatCommands::RegisterCommand(QueueLeaveCommand());
@@ -146,6 +147,13 @@ void onCommand(CRules@ this, u8 cmd, CBitStream@ params)
 		if (!saferead_player(params, @player2)) return;
 
 		game.swapHands(player1, player2);
+	}
+	else if (!isServer() && cmd == this.getCommandID("replenish draw pile"))
+	{
+		Game@ game = GameManager::get();
+		if (game is null) return;
+
+		game.ReplenishDrawPile();
 	}
 }
 
