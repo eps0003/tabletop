@@ -24,7 +24,7 @@ namespace Card
 	// u16: XXXX 0000 0000 0000
 	enum Color
 	{
-		Wild	= Card::Flag::Wild,
+		None	= 0 << 12,
 		Red		= 1 << 12,
 		Yellow	= 2 << 12,
 		Green	= 3 << 12,

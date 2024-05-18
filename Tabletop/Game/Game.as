@@ -41,6 +41,7 @@ class Game
 		Card::Color::Red	| Card::Value::Draw2	| 1,
 
 		Card::Color::Yellow	| Card::Value::Zero		| 0,
+
 		Card::Color::Yellow	| Card::Value::One		| 0,
 		Card::Color::Yellow	| Card::Value::One		| 1,
 		Card::Color::Yellow	| Card::Value::Two		| 0,
@@ -120,14 +121,14 @@ class Game
 		Card::Color::Blue	| Card::Value::Draw2	| 0,
 		Card::Color::Blue	| Card::Value::Draw2	| 1,
 
-		Card::Color::Wild	| Card::Value::Draw4	| 0,
-		Card::Color::Wild	| Card::Value::Draw4	| 1,
-		Card::Color::Wild	| Card::Value::Draw4	| 2,
-		Card::Color::Wild	| Card::Value::Draw4	| 3,
-		Card::Color::Wild							| 0,
-		Card::Color::Wild							| 1,
-		Card::Color::Wild							| 2,
-		Card::Color::Wild							| 3
+		Card::Flag::Wild	| Card::Value::Draw4	| 0,
+		Card::Flag::Wild	| Card::Value::Draw4	| 1,
+		Card::Flag::Wild	| Card::Value::Draw4	| 2,
+		Card::Flag::Wild	| Card::Value::Draw4	| 3,
+		Card::Flag::Wild							| 0,
+		Card::Flag::Wild							| 1,
+		Card::Flag::Wild							| 2,
+		Card::Flag::Wild							| 3
 	};
 	private u16[] discardPile;
 

@@ -5,6 +5,7 @@
 const string CARD_SPRITE_SHEET = "uno.png";
 const u8 CARD_SPRITE_SHEET_COLUMNS = 13;
 const u8 CARD_SPRITE_SHEET_ROWS = 5;
+const float CARD_SCALE = 256.0f;
 
 void onInit(CRules@ this)
 {
@@ -22,14 +23,14 @@ void Render(int id)
 	Render::ClearZ();
 	Render::SetTransformScreenspace();
 
-	Vec2f position = Vec2f(200, 200);
-	float rotation = 45.0f;
-	float scale = getCardDimensions().y;
+	// Vec2f position = Vec2f(CARD_SCALE, CARD_SCALE);
+	// float angle = 45.0f;
+	// float scale = getCardDimensions().y;
 
-	u16 card = isMouseOverCard(position, rotation, scale)
-		? Card::Color::Green | Card::Value::Draw2
-		: Card::Color::Red | Card::Value::Draw2;
-	DrawCard(card, position, rotation, scale);
+	// u16 card = isMouseOverCard(position, angle, scale)
+	// 	? Card::Color::Green | Card::Value::Draw2
+	// 	: Card::Color::Red | Card::Value::Draw2;
+	// DrawCard(card, position, angle, scale);
 
 	Game@ game = GameManager::get();
 	if (game is null) return;
@@ -37,11 +38,11 @@ void Render(int id)
 	// DrawPile(Vec2f(10, 10), game.getDrawPile());
 	// DrawPile(game.getDiscardPile());
 
-	// u16[] hand;
-	// if (game.getHand(getLocalPlayer(), hand)
-	// {
-	// 	DrawHand(hand);
-	// }
+	u16[] hand;
+	if (game.getHand(getLocalPlayer(), hand))
+	{
+		DrawHand(hand, getDriver().getScreenCenterPos());
+	}
 }
 
 Vec2f getCardSpriteCoords(u16 card)
@@ -52,32 +53,37 @@ Vec2f getCardSpriteCoords(u16 card)
 
 	bool invalid = false;
 
-	switch (card & Card::Mask::Color)
+	if (Card::hasFlags(card, Card::Flag::Wild))
 	{
-		case Card::Color::Yellow:
-			y = 0;
-			break;
-		case Card::Color::Red:
-			y = 1;
-			break;
-		case Card::Color::Blue:
-			y = 2;
-			break;
-		case Card::Color::Green:
-			y = 3;
-			break;
-		case Card::Color::Wild:
-			x = 1;
-			y = 4;
-			break;
-		default:
-			invalid = true;
-			break;
-
+		x = 1;
+		y = 4;
+	}
+	else
+	{
+		switch (card & Card::Mask::Color)
+		{
+			case Card::Color::Yellow:
+				y = 0;
+				break;
+			case Card::Color::Red:
+				y = 1;
+				break;
+			case Card::Color::Blue:
+				y = 2;
+				break;
+			case Card::Color::Green:
+				y = 3;
+				break;
+			default:
+				invalid = true;
+				break;
+		}
 	}
 
 	switch (card & Card::Mask::Value)
 	{
+		case Card::Value::None:
+			break;
 		case Card::Value::One:
 			x = 0;
 			break;
@@ -176,31 +182,29 @@ Vertex[] getVertices(u16 card)
 	return vertices;
 }
 
-bool isMouseOverCard(Vec2f position, float rotation, float scale)
+// Thanks ChatGPT!
+bool isMouseOverCard(Vec2f position, float angle, float scale)
 {
-	float radians = toRadians(rotation);
+	Vec2f cardSize = getNormalisedCardDimensions() * scale;
+
+	// Translate the point into the local coordinate system of the OBB
+	Vec2f mousePos = getControls().getInterpMouseScreenPos() - position;
+
+    // Rotate the translated point by the negative angle of rotation of the OBB
+	float radians = toRadians(-angle);
 	float sin = Maths::Sin(radians);
 	float cos = Maths::Cos(radians);
+    float rotatedX = mousePos.x * cos - mousePos.y * sin;
+    float rotatedY = mousePos.x * sin + mousePos.y * cos;
 
-	// Calculate the position of the mouse relative to the card's rotation
-	// https://stackoverflow.com/a/7328496/10456572
-	Vec2f deltaMousePos = getControls().getInterpMouseScreenPos() - position;
-	Vec2f mousePos = Vec2f(
-		position.x + sin * deltaMousePos.y + cos * deltaMousePos.x,
-		position.y + sin * deltaMousePos.y - cos * deltaMousePos.x
-	);
-
-	Vec2f halfDim = getNormalisedCardDimensions() * scale * 0.5f;
-
+    // Check if the rotated point lies within the bounds of the OBB
 	return (
-		mousePos.y > position.y - halfDim.y &&
-		mousePos.y < position.y + halfDim.y &&
-		mousePos.x > position.x - halfDim.x &&
-		mousePos.x < position.x + halfDim.x
+		Maths::Abs(rotatedX) <= cardSize.x * 0.5f &&
+		Maths::Abs(rotatedY) <= cardSize.y * 0.5f
 	);
 }
 
-void DrawCard(u16 card, Vec2f position, float rotation, float scale)
+void DrawCard(u16 card, Vec2f position, float angle, float scale)
 {
 	float[] translationMatrix;
 	Matrix::MakeIdentity(translationMatrix);
@@ -209,7 +213,7 @@ void DrawCard(u16 card, Vec2f position, float rotation, float scale)
 
 	float[] rotationMatrix;
 	Matrix::MakeIdentity(rotationMatrix);
-	Matrix::SetRotationDegrees(rotationMatrix, 0, 0, rotation);
+	Matrix::SetRotationDegrees(rotationMatrix, 0, 0, angle);
 
 	float[] matrix;
 	Matrix::Multiply(translationMatrix, rotationMatrix, matrix);
@@ -221,12 +225,27 @@ void DrawCard(u16 card, Vec2f position, float rotation, float scale)
 	Render::RawQuads(CARD_SPRITE_SHEET, vertices);
 }
 
-void DrawPile(Vec2f position, u16[] cards)
+void DrawPile(u16[] cards, Vec2f position)
 {
 
 }
 
-void DrawHand(Vec2f position, u16[] cards)
+void DrawHand(u16[] cards, Vec2f position)
 {
+	u16 count = cards.size();
 
+	for (uint i = 0; i < count; i++)
+	{
+		int index = i - count * 0.5f + 0.5f;
+		Vec2f cardPosition = position + Vec2f(index * 30, Maths::Pow(1.2f, Maths::Abs(index)) * 10);
+		float cardAngle = index * 4.0f;
+		float cardScale = CARD_SCALE;
+
+		if (isMouseOverCard(cardPosition, cardAngle, cardScale))
+		{
+			cardPosition.y -= 40;
+		}
+
+		DrawCard(cards[i], cardPosition, cardAngle, cardScale);
+	}
 }
