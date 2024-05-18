@@ -171,12 +171,12 @@ void DrawCard(Vec2f position, float rotation, u16 card)
 	Render::RawQuads(CARD_SPRITE_SHEET, vertices);
 }
 
-void DrawPile(Vec2f position, u16 cards)
+void DrawPile(Vec2f position, u16[] cards)
 {
 
 }
 
-void DrawHand(Vec2f position, u16 cards)
+void DrawHand(Vec2f position, u16[] cards)
 {
 
 }
