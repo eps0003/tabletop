@@ -40,3 +40,8 @@ string plural(string singular, string plural, float value)
 {
 	return Maths::Abs(value) == 1 ? singular : plural;
 }
+
+float toRadians(float degrees)
+{
+	return degrees * Maths::Pi / 180.0f;
+}

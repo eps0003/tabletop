@@ -9,6 +9,9 @@ const u8 CARD_SPRITE_SHEET_ROWS = 5;
 void onInit(CRules@ this)
 {
 	Render::addScript(Render::layer_prehud, getCurrentScriptName(), "Render", 0);
+
+    Vec2f offset = Vec2f(-2.5, -2.5) * cl_mouse_scale;
+    getHUD().SetCursorOffset(offset);
 }
 
 void Render(int id)
@@ -19,7 +22,14 @@ void Render(int id)
 	Render::ClearZ();
 	Render::SetTransformScreenspace();
 
-	DrawCard(Vec2f(200, 200), 0.0f, Card::Color::Yellow | Card::Value::Draw2);
+	Vec2f position = Vec2f(200, 200);
+	float rotation = 45.0f;
+	float scale = getCardDimensions().y;
+
+	u16 card = isMouseOverCard(position, rotation, scale)
+		? Card::Color::Green | Card::Value::Draw2
+		: Card::Color::Red | Card::Value::Draw2;
+	DrawCard(card, position, rotation, scale);
 
 	Game@ game = GameManager::get();
 	if (game is null) return;
@@ -137,17 +147,25 @@ Vec2f getCardDimensions()
 	);
 }
 
-Vertex[] getVertices(u16 card)
+Vec2f getNormalisedCardDimensions()
 {
 	Vec2f cardDim = getCardDimensions();
-	Vec2f halfDim = cardDim * 0.5f;
+	return cardDim / Maths::Max(cardDim.x, cardDim.y) * 0.5f;
+}
 
+Vertex[] getVertices(u16 card)
+{
+	// XY coordinates
+	Vec2f halfDim = getNormalisedCardDimensions() * 0.5f;
+
+	// UV coordinates
 	Vec2f cardCoords = getCardSpriteCoords(card);
 	Vec2f spriteCoords = Vec2f(CARD_SPRITE_SHEET_COLUMNS, CARD_SPRITE_SHEET_ROWS);
 
 	Vec2f u = Vec2f(cardCoords.x / spriteCoords.x, cardCoords.y / spriteCoords.y);
 	Vec2f v = Vec2f((cardCoords.x + 1) / spriteCoords.x, (cardCoords.y + 1) / spriteCoords.y);
 
+	// Vertices
 	Vertex[] vertices = {
 		Vertex( halfDim.x, -halfDim.y, 0, v.x, u.y, color_white),
 		Vertex( halfDim.x,  halfDim.y, 0, v.x, v.y, color_white),
@@ -158,16 +176,48 @@ Vertex[] getVertices(u16 card)
 	return vertices;
 }
 
-void DrawCard(Vec2f position, float rotation, u16 card)
+bool isMouseOverCard(Vec2f position, float rotation, float scale)
 {
+	float radians = toRadians(rotation);
+	float sin = Maths::Sin(radians);
+	float cos = Maths::Cos(radians);
+
+	// Calculate the position of the mouse relative to the card's rotation
+	// https://stackoverflow.com/a/7328496/10456572
+	Vec2f deltaMousePos = getControls().getInterpMouseScreenPos() - position;
+	Vec2f mousePos = Vec2f(
+		position.x + sin * deltaMousePos.y + cos * deltaMousePos.x,
+		position.y + sin * deltaMousePos.y - cos * deltaMousePos.x
+	);
+
+	Vec2f halfDim = getNormalisedCardDimensions() * scale * 0.5f;
+
+	return (
+		mousePos.y > position.y - halfDim.y &&
+		mousePos.y < position.y + halfDim.y &&
+		mousePos.x > position.x - halfDim.x &&
+		mousePos.x < position.x + halfDim.x
+	);
+}
+
+void DrawCard(u16 card, Vec2f position, float rotation, float scale)
+{
+	float[] translationMatrix;
+	Matrix::MakeIdentity(translationMatrix);
+	Matrix::SetTranslation(translationMatrix, position.x, position.y, 0);
+	Matrix::SetScale(translationMatrix, scale, scale, 1);
+
+	float[] rotationMatrix;
+	Matrix::MakeIdentity(rotationMatrix);
+	Matrix::SetRotationDegrees(rotationMatrix, 0, 0, rotation);
+
 	float[] matrix;
-	Matrix::MakeIdentity(matrix);
-	Matrix::SetTranslation(matrix, position.x, position.y, 0);
-	Matrix::SetRotationDegrees(matrix, 0, 0, rotation);
-	Render::SetModelTransform(matrix);
+	Matrix::Multiply(translationMatrix, rotationMatrix, matrix);
 
 	Vertex[] vertices = getVertices(card);
 
+	Render::SetModelTransform(matrix);
+	Render::SetModelTransform(matrix);
 	Render::RawQuads(CARD_SPRITE_SHEET, vertices);
 }
 
