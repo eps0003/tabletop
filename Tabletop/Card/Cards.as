@@ -28,26 +28,34 @@ namespace Card
 		Red		= 1 << 12,
 		Yellow	= 2 << 12,
 		Green	= 3 << 12,
-		Blue	= 4 << 12,
+		Blue	= 4 << 12
 	}
 
 	// u16: 0000 X000 0000 0000
 	enum Flag
 	{
-		Wild	= 1 << 11,
+		Wild	= 1 << 11
+	}
+
+	enum Mask
+	{
+		ID		= 0x000F,
+		Value	= 0x07F0,
+		Flags	= 0x0800,
+		Color	= 0xF000
 	}
 
 	bool isEqual(u16 card1, u16 card2)
 	{
 		// Ignore selected wild colour
-		if (Card::isFlag(card1, Card::Flag::Wild))
+		if (Card::hasFlags(card1, Card::Flag::Wild))
 		{
-			card1 &= ~0xF000;
+			card1 &= ~Card::Mask::Color;
 		}
 
-		if (Card::isFlag(card2, Card::Flag::Wild))
+		if (Card::hasFlags(card2, Card::Flag::Wild))
 		{
-			card2 &= ~0xF000;
+			card2 &= ~Card::Mask::Color;
 		}
 
 		return card1 == card2;
@@ -55,7 +63,7 @@ namespace Card
 
 	bool isNumber(u16 card)
 	{
-		u16 value = card & 0x07F0;
+		u16 value = card & Card::Mask::Value;
 		return (
 			value >= Card::Value::Zero &&
 			value <= Card::Value::Nine
@@ -64,27 +72,27 @@ namespace Card
 
 	bool isValue(u16 card, Card::Value value)
 	{
-		return card & 0x07F0 == value;
+		return card & Card::Mask::Value == value;
 	}
 
 	bool isSameValue(u16 card1, u16 card2)
 	{
-		return card1 & 0x07F0 == card2 & 0x07F0;
+		return card1 & Card::Mask::Value == card2 & Card::Mask::Value;
 	}
 
 	bool isColor(u16 card, Card::Color color)
 	{
-		return card & 0xF000 == color;
+		return card & Card::Mask::Color == color;
 	}
 
 	bool isSameColor(u16 card1, u16 card2)
 	{
-		return card1 & 0xF000 == card2 & 0xF000;
+		return card1 & Card::Mask::Color == card2 & Card::Mask::Color;
 	}
 
-	bool isFlag(u16 card, Card::Flag flag)
+	bool hasFlags(u16 card, Card::Flag flags)
 	{
-		return card & flag == flag;
+		return card & flags == flags;
 	}
 
 	string getName(u16 card)
@@ -106,18 +114,18 @@ namespace Card
 
 		string[] name;
 
-		string color = colors[(card & 0xF000) >> 12];
+		string color = colors[(card & Card::Mask::Color) >> 12];
 		if (color != "")
 		{
 			name.push_back(color);
 		}
 
-		if (Card::isFlag(card, Card::Flag::Wild))
+		if (Card::hasFlags(card, Card::Flag::Wild))
 		{
 			name.push_back("Wild");
 		}
 
-		string value = values[(card & 0x07F0) >> 4];
+		string value = values[(card & Card::Mask::Value) >> 4];
 		if (value != "")
 		{
 			name.push_back(value);

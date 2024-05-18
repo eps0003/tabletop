@@ -46,7 +46,7 @@ class CardPlayCommand : ChatCommand
 			return;
 		};
 
-		if (Card::isFlag(card, Card::Flag::Wild))
+		if (Card::hasFlags(card, Card::Flag::Wild))
 		{
 			if (args.size() < 2)
 			{

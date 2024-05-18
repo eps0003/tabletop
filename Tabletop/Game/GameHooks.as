@@ -179,7 +179,9 @@ void onRender(CRules@ this)
 	for (uint i = 0; i < players.size(); i++)
 	{
 		CPlayer@ player = players[i];
-		u16[] hand = game.getHand(player);
+
+		u16[] hand;
+		game.getHand(player, hand);
 
 		GUI::DrawText(player.getUsername() + ": " + stringifyCards(hand), Vec2f(10, 10 + 15 * yIndex++), color_white);
 	}

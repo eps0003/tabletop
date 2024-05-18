@@ -192,6 +192,7 @@ class Game
 				bs.write_u16(players[i].getNetworkID());
 			}
 
+			// TODO: Move this into GameManager::set()
 			getRules().SendCommand(getRules().getCommandID("init game"), bs, true);
 		}
 
@@ -239,7 +240,10 @@ class Game
 			CPlayer@ gamePlayer = players[i];
 
 			bs.write_u16(gamePlayer.getNetworkID());
-			SerialiseCards(bs, getHand(gamePlayer));
+
+			u16[] hand;
+			getHand(gamePlayer, hand);
+			SerialiseCards(bs, hand);
 		}
 
 		SerialiseCards(bs, drawPile);
@@ -291,11 +295,15 @@ class Game
 		return turnPlayer;
 	}
 
-	u16[] getHand(CPlayer@ player)
+	bool getHand(CPlayer@ player, u16[] &out hand)
 	{
-		u16[] hand;
+		if (player is null)
+		{
+			return false;
+		}
+
 		hands.get(player.getUsername(), hand);
-		return hand;
+		return true;
 	}
 
 	u16[] getDrawPile()
@@ -536,7 +544,7 @@ class Game
 		print("Shuffled cards: " + seed + " seed");
 	}
 
-	private void ReplenishDrawPile()
+	void ReplenishDrawPile()
 	{
 		int replenishCount = discardPile.size() - 1;
 		if (replenishCount <= 0) return;
@@ -546,9 +554,9 @@ class Game
 			u16 card = discardPile[i];
 
 			// Remove selected colour
-			if (Card::isFlag(card, Card::Flag::Wild))
+			if (Card::hasFlags(card, Card::Flag::Wild))
 			{
-				card &= ~0xF000;
+				card &= ~Card::Mask::Color;
 			}
 
 			drawPile.push_back(card);
@@ -570,7 +578,12 @@ class Game
 
 	bool playerHasCard(CPlayer@ player, u16 card)
 	{
-		u16[] hand = getHand(player);
+		u16[] hand;
+
+		if (!getHand(player, hand))
+		{
+			return false;
+		}
 
 		for (uint i = 0; i < hand.size(); i++)
 		{
@@ -610,6 +623,7 @@ class Game
 	}
 }
 
+// TODO: Rename to Game
 namespace GameManager
 {
 	void Set(Game@ game)

@@ -2,6 +2,8 @@
 
 class OfficialRuleset : Ruleset
 {
+	private u16 pickup = 0;
+
 	void OnStart(Game@ game, CPlayer@[] players)
 	{
 		print("Official ruleset");
@@ -9,36 +11,97 @@ class OfficialRuleset : Ruleset
 
 	void OnPlayCard(Game@ game, CPlayer@ player, u16 card)
 	{
-		if (isServer())
+		if (Card::isValue(card, Card::Value::Reverse))
 		{
-			Game@ game = GameManager::get();
-			if (game is null) return;
-
-			if (Card::isValue(card, Card::Value::Reverse))
+			if (isServer())
 			{
 				game.ReverseDirection();
+				game.NextTurn();
 			}
+			return;
+		}
 
-			if (Card::isValue(card, Card::Value::Skip))
+		if (Card::isValue(card, Card::Value::Skip))
+		{
+			if (isServer())
 			{
 				game.SkipTurn();
 			}
-			else
+			return;
+		}
+
+		if (Card::isValue(card, Card::Value::Draw2))
+		{
+			pickup += 2;
+
+			if (isServer())
+			{
+				game.NextTurn();
+				game.DrawCard();
+				game.DrawCard();
+				game.NextTurn();
+			}
+			return;
+		}
+
+		if (Card::isValue(card, Card::Value::Draw4))
+		{
+			pickup += 4;
+
+			if (isServer())
+			{
+				game.NextTurn();
+				game.DrawCard();
+				game.DrawCard();
+				game.DrawCard();
+				game.DrawCard();
+				game.NextTurn();
+			}
+			return;
+		}
+	}
+
+	void OnDrawCard(Game@ game, CPlayer@ player, u16 card)
+	{
+		if (isServer())
+		{
+			if (canPlayCard(game, player, card))
+			{
+				// TODO: Pick colour if wild
+				game.PlayCard(player, card);
+			}
+
+			if (game.getDiscardPile().empty())
+			{
+				game.ReplenishDrawPile();
+			}
+
+			if (pickup == 0)
 			{
 				game.NextTurn();
 			}
+		}
+
+		if (pickup > 0)
+		{
+			pickup--;
 		}
 	}
 
 	bool canPlayCard(Game@ game, CPlayer@ player, u16 card)
 	{
+		if (pickup > 0)
+		{
+			return false;
+		}
+
 		u16[] discardPile = game.getDiscardPile();
 		u16 discardPileCard = discardPile[discardPile.size() - 1];
 
 		return (
 			Card::isSameColor(card, discardPileCard) ||
 			Card::isSameValue(card, discardPileCard) ||
-			Card::isFlag(card, Card::Flag::Wild)
+			Card::hasFlags(card, Card::Flag::Wild)
 		);
 	}
 }
