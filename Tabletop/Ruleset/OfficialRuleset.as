@@ -65,18 +65,17 @@ class OfficialRuleset : Ruleset
 	{
 		if (isServer())
 		{
+			if (game.getDrawPile().empty())
+			{
+				game.ReplenishDrawPile();
+			}
+
 			if (canPlayCard(game, player, card))
 			{
 				// TODO: Pick colour if wild
 				game.PlayCard(player, card);
 			}
-
-			if (game.getDiscardPile().empty())
-			{
-				game.ReplenishDrawPile();
-			}
-
-			if (pickup == 0)
+			else if (pickup == 0)
 			{
 				game.NextTurn();
 			}
