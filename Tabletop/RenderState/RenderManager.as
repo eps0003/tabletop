@@ -16,11 +16,11 @@ class RenderManager
 		return this;
 	}
 
-	void Update()
+	void Render()
 	{
 		if (!states.isComplete())
 		{
-			states.Update();
+			states.Render();
 
 			if (states.isComplete())
 			{

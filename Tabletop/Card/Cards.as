@@ -47,18 +47,7 @@ namespace Card
 
 	bool isEqual(u16 card1, u16 card2)
 	{
-		// Ignore selected wild colour
-		if (Card::hasFlags(card1, Card::Flag::Wild))
-		{
-			card1 &= ~Card::Mask::Color;
-		}
-
-		if (Card::hasFlags(card2, Card::Flag::Wild))
-		{
-			card2 &= ~Card::Mask::Color;
-		}
-
-		return card1 == card2;
+		return Card::clean(card1) == Card::clean(card2);
 	}
 
 	bool isNumber(u16 card)
@@ -93,6 +82,17 @@ namespace Card
 	bool hasFlags(u16 card, Card::Flag flags)
 	{
 		return card & flags == flags;
+	}
+
+	u16 clean(u16 card)
+	{
+		// Ignore selected wild colour
+		if (Card::hasFlags(card, Card::Flag::Wild))
+		{
+			card &= ~Card::Mask::Color;
+		}
+
+		return card;
 	}
 
 	string getName(u16 card)

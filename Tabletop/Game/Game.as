@@ -11,7 +11,7 @@ class Game
 
 	Ruleset@ ruleset;
 
-	private u16[] drawPile = {
+	private u16[] deck = {
 	//	Color				| Value					| ID
 		Card::Color::Red	| Card::Value::Zero		| 0,
 		Card::Color::Red	| Card::Value::One		| 0,
@@ -130,6 +130,8 @@ class Game
 		Card::Flag::Wild							| 2,
 		Card::Flag::Wild							| 3
 	};
+
+	private u16[] drawPile;
 	private u16[] discardPile;
 
 	private bool pendingAction = false;
@@ -153,6 +155,7 @@ class Game
 			@turnPlayer = players[0];
 		}
 
+		drawPile = getDeck();
 		ShuffleCards(drawPile, seed);
 
 		// Start with a number card in the discard pile
@@ -285,6 +288,11 @@ class Game
 		}
 
 		return true;
+	}
+
+	u16[] getDeck()
+	{
+		return deck;
 	}
 
 	CPlayer@[] getPlayers()
@@ -436,10 +444,8 @@ class Game
 		return turnPlayer !is null && turnPlayer is player;
 	}
 
-	void DrawCard()
+	u16 drawCard()
 	{
-		if (!ruleset.canDrawCard(this, turnPlayer)) return;
-
 		u16[]@ hand;
 		hands.get(turnPlayer.getUsername(), @hand);
 
@@ -460,6 +466,8 @@ class Game
 
 		print("Drew card: " + turnPlayer.getUsername());
 		ruleset.OnDrawCard(this, turnPlayer, card);
+
+		return card;
 	}
 
 	void PlayCard(CPlayer@ player, u16 card)
@@ -553,13 +561,7 @@ class Game
 
 		for (uint i = 0; i < replenishCount; i++)
 		{
-			u16 card = discardPile[i];
-
-			// Remove selected colour
-			if (Card::hasFlags(card, Card::Flag::Wild))
-			{
-				card &= ~Card::Mask::Color;
-			}
+			u16 card = Card::clean(discardPile[i]);
 
 			drawPile.push_back(card);
 		}

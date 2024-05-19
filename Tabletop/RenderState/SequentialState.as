@@ -19,7 +19,7 @@ class SequentialState : RenderState
 		return this;
 	}
 
-	void Update()
+	void Render()
 	{
 		if (isComplete()) return;
 
@@ -31,17 +31,12 @@ class SequentialState : RenderState
 			state.Start();
 		}
 
-		state.Update();
+		state.Render();
 
 		if (state.isComplete())
 		{
 			state.End();
 			index++;
-
-			if (!isComplete())
-			{
-				states[index].Start();
-			}
 		}
 	}
 

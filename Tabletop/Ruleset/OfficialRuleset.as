@@ -37,8 +37,8 @@ class OfficialRuleset : Ruleset
 			if (isServer())
 			{
 				game.NextTurn();
-				game.DrawCard();
-				game.DrawCard();
+				game.drawCard();
+				game.drawCard();
 				game.NextTurn();
 			}
 			return;
@@ -51,10 +51,10 @@ class OfficialRuleset : Ruleset
 			if (isServer())
 			{
 				game.NextTurn();
-				game.DrawCard();
-				game.DrawCard();
-				game.DrawCard();
-				game.DrawCard();
+				game.drawCard();
+				game.drawCard();
+				game.drawCard();
+				game.drawCard();
 				game.NextTurn();
 			}
 			return;

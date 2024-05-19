@@ -25,6 +25,6 @@ class CardDrawCommand : ChatCommand
 			return;
 		}
 
-		game.DrawCard();
+		game.drawCard();
 	}
 }

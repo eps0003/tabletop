@@ -19,7 +19,7 @@ class ParallelState : RenderState
 		}
 	}
 
-	void Update()
+	void Render()
 	{
 		for (uint i = 0; i < states.size(); i++)
 		{
@@ -27,7 +27,7 @@ class ParallelState : RenderState
 
 			if (!state.isComplete())
 			{
-				state.Update();
+				state.Render();
 			}
 			else if (!complete[i])
 			{

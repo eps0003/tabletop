@@ -1,7 +1,7 @@
 class RenderState
 {
 	void Start() {}
-	void Update() {}
+	void Render() {}
 	void End() {}
 	bool isComplete() { return true; }
 }

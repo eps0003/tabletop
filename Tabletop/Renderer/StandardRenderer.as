@@ -1,6 +1,8 @@
 #include "Game.as"
+#include "RenderCard.as"
 #include "RenderManager.as"
 #include "GameStart.as"
+#include "CardDraw.as"
 
 #define CLIENT_ONLY
 
@@ -10,6 +12,7 @@ const u8 CARD_SPRITE_SHEET_ROWS = 5;
 const float CARD_SCALE = 256.0f;
 
 RenderManager renderManager;
+dictionary renderCards;
 
 void onInit(CRules@ this)
 {
@@ -40,12 +43,30 @@ void onCommand(CRules@ this, u8 cmd, CBitStream@ params)
 		}
 
 		Game@ game = Game(players, OfficialRuleset(), seed);
+
+		u16[] deck = game.getDeck();
+		for (uint i = 0; i < deck.size(); i++)
+		{
+			u16 card = deck[i];
+			renderCards.set("" + card, RenderCard(card));
+
+		}
+
 		RenderState@ state = GameStart(game);
 		renderManager.Add(state);
 	}
 	else if (!isServer() && cmd == this.getCommandID("sync game"))
 	{
-		GameManager::Set(Game(params));
+		Game@ game = Game(params);
+
+		u16[] deck = game.getDeck();
+		for (uint i = 0; i < deck.size(); i++)
+		{
+			u16 card = deck[i];
+			renderCards.set("" + card, RenderCard(card));
+		}
+
+		GameManager::Set(game);
 	}
 	else if (!isServer() && cmd == this.getCommandID("end game"))
 	{
@@ -90,7 +111,8 @@ void onCommand(CRules@ this, u8 cmd, CBitStream@ params)
 		Game@ game = GameManager::get();
 		if (game is null) return;
 
-		game.DrawCard();
+		RenderState@ state = CardDraw(game, renderCards);
+		renderManager.Add(state);
 	}
 	else if (!isServer() && cmd == this.getCommandID("play card"))
 	{
@@ -165,7 +187,7 @@ void Render(int id)
 	Render::ClearZ();
 	Render::SetTransformScreenspace();
 
-	renderManager.Update();
+	renderManager.Render();
 
 	// Vec2f position = Vec2f(CARD_SCALE, CARD_SCALE);
 	// float angle = 45.0f;
@@ -179,13 +201,15 @@ void Render(int id)
 	Game@ game = GameManager::get();
 	if (game is null) return;
 
-	// DrawPile(Vec2f(10, 10), game.getDrawPile());
-	// DrawPile(game.getDiscardPile());
+	Vec2f screenCenter = getDriver().getScreenCenterPos();
+
+	DrawPile(game.getDrawPile(), screenCenter + Vec2f(-60, -100));
+	DrawPile(game.getDiscardPile(), screenCenter + Vec2f(60, -100));
 
 	u16[] hand;
 	if (game.getHand(getLocalPlayer(), hand))
 	{
-		DrawHand(hand, getDriver().getScreenCenterPos());
+		DrawHand(hand, screenCenter + Vec2f(0, 100));
 	}
 }
 
@@ -389,7 +413,25 @@ void DrawCard(u16 card, Vec2f position, float angle, float scale)
 
 void DrawPile(u16[] cards, Vec2f position)
 {
+	u16 count = cards.size();
 
+	for (uint i = 0; i < count; i++)
+	{
+		u16 card = Card::clean(cards[i]);
+
+		Vec2f cardPosition = position - Vec2f(0.0f, 0.5f * i);
+		float cardAngle = 0.0f;
+		float cardScale = CARD_SCALE;
+
+		RenderCard@ renderCard;
+		renderCards.get("" + card, @renderCard);
+
+		renderCard.SetPosition(cardPosition);
+		renderCard.SetAngle(cardAngle);
+		renderCard.SetScale(cardScale);
+
+		renderCard.Render();
+	}
 }
 
 void DrawHand(u16[] cards, Vec2f position)
@@ -398,7 +440,9 @@ void DrawHand(u16[] cards, Vec2f position)
 
 	for (uint i = 0; i < count; i++)
 	{
-		int index = i - count * 0.5f + 0.5f;
+		u16 card = Card::clean(cards[i]);
+
+		float index = i - count * 0.5f + 0.5f;
 		Vec2f cardPosition = position + Vec2f(index * 30, Maths::Pow(1.2f, Maths::Abs(index)) * 10);
 		float cardAngle = index * 4.0f;
 		float cardScale = CARD_SCALE;
@@ -408,6 +452,13 @@ void DrawHand(u16[] cards, Vec2f position)
 			cardPosition.y -= 40;
 		}
 
-		DrawCard(cards[i], cardPosition, cardAngle, cardScale);
+		RenderCard@ renderCard;
+		renderCards.get("" + card, @renderCard);
+
+		renderCard.SetPosition(cardPosition);
+		renderCard.SetAngle(cardAngle);
+		renderCard.SetScale(cardScale);
+
+		renderCard.Render();
 	}
 }
