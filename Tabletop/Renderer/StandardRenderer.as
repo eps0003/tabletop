@@ -1,4 +1,6 @@
 #include "Game.as"
+#include "RenderManager.as"
+#include "GameStart.as"
 
 #define CLIENT_ONLY
 
@@ -6,6 +8,8 @@ const string CARD_SPRITE_SHEET = "uno.png";
 const u8 CARD_SPRITE_SHEET_COLUMNS = 13;
 const u8 CARD_SPRITE_SHEET_ROWS = 5;
 const float CARD_SCALE = 256.0f;
+
+RenderManager renderManager;
 
 void onInit(CRules@ this)
 {
@@ -15,6 +19,144 @@ void onInit(CRules@ this)
     getHUD().SetCursorOffset(offset);
 }
 
+void onCommand(CRules@ this, u8 cmd, CBitStream@ params)
+{
+	if (!isServer() && cmd == this.getCommandID("init game"))
+	{
+		u32 seed;
+		if (!params.saferead_u32(seed)) return;
+
+		u16 playerCount;
+		if (!params.saferead_u16(playerCount)) return;
+
+		CPlayer@[] players;
+
+		for (uint i = 0; i < playerCount; i++)
+		{
+			CPlayer@ player;
+			if (!saferead_player(params, @player)) return;
+
+			players.push_back(player);
+		}
+
+		Game@ game = Game(players, OfficialRuleset(), seed);
+		RenderState@ state = GameStart(game);
+		renderManager.Add(state);
+	}
+	else if (!isServer() && cmd == this.getCommandID("sync game"))
+	{
+		GameManager::Set(Game(params));
+	}
+	else if (!isServer() && cmd == this.getCommandID("end game"))
+	{
+		Game@ game = GameManager::get();
+		if (game is null) return;
+
+		game.End();
+	}
+	else if (!isServer() && cmd == this.getCommandID("remove player"))
+	{
+		Game@ game = GameManager::get();
+		if (game is null) return;
+
+		CPlayer@ player;
+		if (!saferead_player(params, @player)) return;
+
+		game.RemovePlayer(player);
+	}
+	else if (!isServer() && cmd == this.getCommandID("next turn"))
+	{
+		Game@ game = GameManager::get();
+		if (game is null) return;
+
+		game.NextTurn();
+	}
+	else if (!isServer() && cmd == this.getCommandID("skip turn"))
+	{
+		Game@ game = GameManager::get();
+		if (game is null) return;
+
+		game.SkipTurn();
+	}
+	else if (!isServer() && cmd == this.getCommandID("reverse direction"))
+	{
+		Game@ game = GameManager::get();
+		if (game is null) return;
+
+		game.ReverseDirection();
+	}
+	else if (!isServer() && cmd == this.getCommandID("draw card"))
+	{
+		Game@ game = GameManager::get();
+		if (game is null) return;
+
+		game.DrawCard();
+	}
+	else if (!isServer() && cmd == this.getCommandID("play card"))
+	{
+		Game@ game = GameManager::get();
+		if (game is null) return;
+
+		CPlayer@ player;
+		if (!saferead_player(params, @player)) return;
+
+		u16 card;
+		if (!params.saferead_u16(card)) return;
+
+		game.PlayCard(player, card);
+	}
+	else if (!isServer() && cmd == this.getCommandID("swap hands"))
+	{
+		Game@ game = GameManager::get();
+		if (game is null) return;
+
+		CPlayer@ player1;
+		if (!saferead_player(params, @player1)) return;
+
+		CPlayer@ player2;
+		if (!saferead_player(params, @player2)) return;
+
+		game.swapHands(player1, player2);
+	}
+	else if (!isServer() && cmd == this.getCommandID("replenish draw pile"))
+	{
+		Game@ game = GameManager::get();
+		if (game is null) return;
+
+		game.ReplenishDrawPile();
+	}
+}
+
+void onRender(CRules@ this)
+{
+	Game@ game = GameManager::get();
+	if (game is null) return;
+
+	GUI::SetFont("menu");
+
+	uint yIndex = 0;
+
+	GUI::DrawText("Turn: " + game.getTurnPlayer().getUsername(), Vec2f(10, 10 + 15 * yIndex++), color_white);
+
+	yIndex++;
+
+	GUI::DrawText("Draw pile: " + stringifyCards(game.getDrawPile()), Vec2f(10, 10 + 15 * yIndex++), color_white);
+	GUI::DrawText("Discard pile: " + stringifyCards(game.getDiscardPile()), Vec2f(10, 10 + 15 * yIndex++), color_white);
+
+	yIndex++;
+
+	CPlayer@[] players = game.getPlayers();
+	for (uint i = 0; i < players.size(); i++)
+	{
+		CPlayer@ player = players[i];
+
+		u16[] hand;
+		game.getHand(player, hand);
+
+		GUI::DrawText(player.getUsername() + ": " + stringifyCards(hand), Vec2f(10, 10 + 15 * yIndex++), color_white);
+	}
+}
+
 void Render(int id)
 {
 	Render::SetAlphaBlend(true);
@@ -22,6 +164,8 @@ void Render(int id)
 	Render::SetBackfaceCull(true);
 	Render::ClearZ();
 	Render::SetTransformScreenspace();
+
+	renderManager.Update();
 
 	// Vec2f position = Vec2f(CARD_SCALE, CARD_SCALE);
 	// float angle = 45.0f;
@@ -43,6 +187,24 @@ void Render(int id)
 	{
 		DrawHand(hand, getDriver().getScreenCenterPos());
 	}
+}
+
+string stringifyCards(u16[] cards)
+{
+	string[] cardNames;
+
+	for (uint i = 0; i < cards.size(); i++)
+	{
+		u16 card = cards[i];
+		cardNames.push_back(Card::getName(card) + " (" + card + ")");
+	}
+
+	if (cardNames.empty())
+	{
+		return "{}";
+	}
+
+	return "{ " + join(cardNames, ", ") + " }";
 }
 
 Vec2f getCardSpriteCoords(u16 card)
