@@ -59,6 +59,8 @@ class OfficialRuleset : Ruleset
 			}
 			return;
 		}
+
+		game.NextTurn();
 	}
 
 	void OnDrawCard(Game@ game, string player, u16 card)

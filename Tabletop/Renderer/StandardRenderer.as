@@ -6,6 +6,7 @@
 #include "CardPlay.as"
 #include "TurnNext.as"
 #include "TurnSkip.as"
+#include "PlayerLeave.as"
 
 #define CLIENT_ONLY
 
@@ -86,7 +87,8 @@ void onCommand(CRules@ this, u8 cmd, CBitStream@ params)
 		string player;
 		if (!params.saferead_string(player)) return;
 
-		game.RemovePlayer(player);
+		RenderState@ state = PlayerLeave(game, renderCards, player);
+		renderManager.Add(state);
 	}
 	else if (!isServer() && cmd == this.getCommandID("next turn"))
 	{
