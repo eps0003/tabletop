@@ -6,7 +6,7 @@ const u16 STARTING_HAND_SIZE = 7;
 
 class Game
 {
-	private CPlayer@[] players;
+	private string[] players;
 	private dictionary hands;
 
 	Ruleset@ ruleset;
@@ -136,23 +136,23 @@ class Game
 
 	private bool pendingAction = false;
 
-	private CPlayer@ turnPlayer;
+	private string turnPlayer;
 	private s8 turnDirection = 1;
 
-	Game(CPlayer@[] players, Ruleset@ ruleset, uint seed = Time())
+	Game(string[] players, Ruleset@ ruleset, uint seed = Time())
 	{
 		this.players = players;
 		@this.ruleset = ruleset;
 
-		if (players.empty())
+		if (this.players.empty())
 		{
 			warn("Started game: 0 players");
 		}
 		else
 		{
-			print("Started game: " + players.size() + plural(" player", " players", players.size()));
+			print("Started game: " + this.players.size() + plural(" player", " players", this.players.size()));
 
-			@turnPlayer = players[0];
+			turnPlayer = this.players[0];
 		}
 
 		drawPile = getDeck();
@@ -170,7 +170,7 @@ class Game
 			}
 		}
 
-		for (uint i = 0; i < players.size(); i++)
+		for (uint i = 0; i < this.players.size(); i++)
 		{
 			u16[] hand;
 
@@ -183,25 +183,25 @@ class Game
 				hand.push_back(card);
 			}
 
-			hands.set(players[i].getUsername(), hand);
+			hands.set(this.players[i], hand);
 		}
 
 		if (isServer())
 		{
 			CBitStream bs;
 			bs.write_u32(seed);
-			bs.write_u16(players.size());
+			bs.write_u16(this.players.size());
 
-			for (uint i = 0; i < players.size(); i++)
+			for (uint i = 0; i < this.players.size(); i++)
 			{
-				bs.write_u16(players[i].getNetworkID());
+				bs.write_string(this.players[i]);
 			}
 
 			// TODO: Move this into GameManager::set()
 			getRules().SendCommand(getRules().getCommandID("init game"), bs, true);
 		}
 
-		ruleset.OnStart(this, players);
+		ruleset.OnStart(this, this.players);
 	}
 
 	Game(CBitStream@ bs)
@@ -211,25 +211,25 @@ class Game
 
 		for (uint i = 0; i < playerCount; i++)
 		{
-			CPlayer@ player;
-			if (!saferead_player(bs, @player)) return;
+			string player;
+			if (!bs.saferead_string(player)) return;
 
 			players.push_back(player);
 
 			u16[] hand;
 			if (!deserialiseCards(bs, hand)) return;
 
-			hands.set(player.getUsername(), hand);
+			hands.set(player, hand);
 		}
 
 		if (!deserialiseCards(bs, drawPile)) return;
 		if (!deserialiseCards(bs, discardPile)) return;
 
-		if (!saferead_player(bs, @turnPlayer)) return;
+		if (!bs.saferead_string(turnPlayer)) return;
 		if (!bs.saferead_s8(turnDirection)) return;
 
 		print("Deserialized game");
-		ruleset.OnSync(this, getLocalPlayer());
+		ruleset.OnSync(this, getLocalPlayer().getUsername());
 	}
 
 	void Sync(CPlayer@ player)
@@ -242,9 +242,9 @@ class Game
 
 		for (uint i = 0; i < players.size(); i++)
 		{
-			CPlayer@ gamePlayer = players[i];
+			string gamePlayer = players[i];
 
-			bs.write_u16(gamePlayer.getNetworkID());
+			bs.write_string(gamePlayer);
 
 			u16[] hand;
 			getHand(gamePlayer, hand);
@@ -254,13 +254,13 @@ class Game
 		SerialiseCards(bs, drawPile);
 		SerialiseCards(bs, discardPile);
 
-		bs.write_u16(turnPlayer.getNetworkID());
+		bs.write_string(turnPlayer);
 		bs.write_s8(turnDirection);
 
 		getRules().SendCommand(getRules().getCommandID("sync game"), bs, player);
 
 		print("Synced game: " + player.getUsername());
-		ruleset.OnSync(this, player);
+		ruleset.OnSync(this, player.getUsername());
 	}
 
 	private void SerialiseCards(CBitStream@ bs, u16[] cards)
@@ -295,25 +295,37 @@ class Game
 		return deck;
 	}
 
-	CPlayer@[] getPlayers()
+	string[] getPlayers()
 	{
 		return players;
 	}
 
-	CPlayer@ getTurnPlayer()
+	bool isPlayerPlaying(string player)
+	{
+		for (uint i = 0; i < players.size(); i++)
+		{
+			if (players[i] == player)
+			{
+				return true;
+			}
+		}
+
+		return false;
+	}
+
+	string getTurnPlayer()
 	{
 		return turnPlayer;
 	}
 
-	bool getHand(CPlayer@ player, u16[] &out hand)
+	bool isPlayersTurn(string player)
 	{
-		if (player is null)
-		{
-			return false;
-		}
+		return player == turnPlayer;
+	}
 
-		hands.get(player.getUsername(), hand);
-		return true;
+	bool getHand(string player, u16[] &out hand)
+	{
+		return hands.get(player, hand);
 	}
 
 	u16[] getDrawPile()
@@ -326,15 +338,15 @@ class Game
 		return discardPile;
 	}
 
-	void RemovePlayer(CPlayer@ player, bool sync = true)
+	void RemovePlayer(string player)
 	{
 		for (uint i = 0; i < players.size(); i++)
 		{
-			CPlayer@ otherPlayer = players[i];
-			if (player is otherPlayer)
+			string otherPlayer = players[i];
+			if (player == otherPlayer)
 			{
 				u16[]@ hand;
-				hands.get(player.getUsername(), @hand);
+				hands.get(player, @hand);
 
 				// Discard hand to the bottom of the discard pile
 				for (int i = hand.size() - 1; i >= 0; i--)
@@ -342,25 +354,22 @@ class Game
 					discardPile.insertAt(0, hand[i]);
 				}
 
-				if (player is turnPlayer && players.size() > 1)
+				if (isPlayersTurn(player) && players.size() > 1)
 				{
-					NextTurn(sync);
+					NextTurn();
 				}
 
 				players.removeAt(i);
-				hands.delete(player.getUsername());
+				hands.delete(player);
 
 				if (isServer())
 				{
-					if (sync)
-					{
-						CBitStream bs;
-						bs.write_u16(player.getNetworkID());
-						getRules().SendCommand(getRules().getCommandID("remove player"), bs, true);
-					}
+					CBitStream bs;
+					bs.write_string(player);
+					getRules().SendCommand(getRules().getCommandID("remove player"), bs, true);
 				}
 
-				print("Removed player: " + player.getUsername());
+				print("Removed player: " + player);
 				ruleset.OnLeave(this, player);
 
 				if (isServer() && players.size() == 0)
@@ -373,22 +382,22 @@ class Game
 		}
 	}
 
-	void NextTurn(bool sync = true)
+	void NextTurn()
 	{
 		for (uint i = 0; i < players.size(); i++)
 		{
-			if (players[i] is turnPlayer)
+			if (isPlayersTurn(players[i]))
 			{
 				u16 turnIndex = (i + turnDirection) % players.size();
-				@turnPlayer = players[turnIndex];
+				turnPlayer = players[turnIndex];
 
-				if (isServer() && sync)
+				if (isServer())
 				{
 					CBitStream bs;
 					getRules().SendCommand(getRules().getCommandID("next turn"), bs, true);
 				}
 
-				print("Next turn: " + turnPlayer.getUsername());
+				print("Next turn: " + turnPlayer);
 				ruleset.OnNextTurn(this, players[i], turnPlayer);
 
 				break;
@@ -400,13 +409,13 @@ class Game
 	{
 		for (uint i = 0; i < players.size(); i++)
 		{
-			if (players[i] is turnPlayer)
+			if (isPlayersTurn(players[i]))
 			{
 				u16 skippedTurnIndex = (i + turnDirection) % players.size();
-				CPlayer@ skippedTurnPlayer = players[skippedTurnIndex];
+				string skippedTurnPlayer = players[skippedTurnIndex];
 
 				u16 turnIndex = (i + turnDirection * 2) % players.size();
-				@turnPlayer = players[turnIndex];
+				turnPlayer = players[turnIndex];
 
 				if (isServer())
 				{
@@ -414,10 +423,10 @@ class Game
 					getRules().SendCommand(getRules().getCommandID("skip turn"), bs, true);
 				}
 
-				print("Skip turn: " + skippedTurnPlayer.getUsername());
+				print("Skip turn: " + skippedTurnPlayer);
 				ruleset.OnSkipTurn(this, skippedTurnPlayer);
 
-				print("Next turn: " + turnPlayer.getUsername());
+				print("Next turn: " + turnPlayer);
 				ruleset.OnNextTurn(this, players[i], turnPlayer);
 
 				break;
@@ -439,15 +448,10 @@ class Game
 		ruleset.OnReverseDirection(this, turnDirection);
 	}
 
-	bool isPlayersTurn(CPlayer@ player)
-	{
-		return turnPlayer !is null && turnPlayer is player;
-	}
-
 	u16 drawCard()
 	{
 		u16[]@ hand;
-		hands.get(turnPlayer.getUsername(), @hand);
+		hands.get(turnPlayer, @hand);
 
 		uint index = drawPile.size() - 1;
 		u16 card = drawPile[index];
@@ -459,23 +463,23 @@ class Game
 		{
 			CBitStream bs;
 			// Optional
-			bs.write_u16(turnPlayer.getNetworkID());
+			bs.write_string(turnPlayer);
 			bs.write_u16(card);
 			getRules().SendCommand(getRules().getCommandID("draw card"), bs, true);
 		}
 
-		print("Drew card: " + turnPlayer.getUsername());
+		print("Drew card: " + turnPlayer);
 		ruleset.OnDrawCard(this, turnPlayer, card);
 
 		return card;
 	}
 
-	void PlayCard(CPlayer@ player, u16 card)
+	void PlayCard(string player, u16 card)
 	{
 		if (!canPlayCard(player, card)) return;
 
 		u16[]@ hand;
-		hands.get(player.getUsername(), @hand);
+		hands.get(player, @hand);
 
 		for (int i = hand.size() - 1; i >= 0; i--)
 		{
@@ -489,50 +493,45 @@ class Game
 				if (isServer())
 				{
 					CBitStream bs;
-					bs.write_u16(player.getNetworkID());
+					bs.write_string(player);
 					bs.write_u16(card);
 					getRules().SendCommand(getRules().getCommandID("play card"), bs, true);
 				}
 
-				print("Played card: " + player.getUsername() + ", " + handCard);
+				print("Played card: " + player + ", " + handCard);
 				ruleset.OnPlayCard(this, turnPlayer, card);
 			}
 		}
 	}
 
-	bool swapHands(CPlayer@ player1, CPlayer@ player2)
+	void SwapHands(string player1, string player2)
 	{
-		u16[] player1Hand;
-		hands.get(player1.getUsername(), @player1Hand);
+		u16[]@ player1Hand;
+		hands.get(player1, @player1Hand);
 
-		u16[] player2Hand;
-		hands.get(player2.getUsername(), @player2Hand);
+		u16[]@ player2Hand;
+		hands.get(player2, @player2Hand);
 
 		if (player1Hand is null || player2Hand is null)
 		{
-			return false;
+			warn("Attempted to swap hands with null player(s): " + player1 + ", " + player2);
+			return;
 		}
 
-		if (player1Hand.empty() || player2Hand.empty())
-		{
-			return false;
-		}
-
-		hands.set(player1.getUsername(), player2Hand);
-		hands.set(player2.getUsername(), player1Hand);
+		u16[] temp = player1Hand;
+		player1Hand = player2Hand;
+		player2Hand = temp;
 
 		if (isServer())
 		{
 			CBitStream bs;
-			bs.write_u16(player1.getNetworkID());
-			bs.write_u16(player2.getNetworkID());
+			bs.write_string(player1);
+			bs.write_string(player2);
 			getRules().SendCommand(getRules().getCommandID("swap hands"), bs, true);
 		}
 
-		print("Swapped hands: " + player1.getUsername() + ", " + player2.getUsername());
+		print("Swapped hands: " + player1 + ", " + player2);
 		ruleset.OnSwapHands(this, player1, player2);
-
-		return true;
 	}
 
 	// FIXME: Achieve true determinism by only randomizing on server and syncing entire draw pile to clients
@@ -580,7 +579,7 @@ class Game
 		ruleset.OnReplenishDrawPile(this);
 	}
 
-	bool playerHasCard(CPlayer@ player, u16 card)
+	bool playerHasCard(string player, u16 card)
 	{
 		u16[] hand;
 
@@ -602,7 +601,7 @@ class Game
 		return false;
 	}
 
-	bool canPlayCard(CPlayer@ player, u16 card)
+	bool canPlayCard(string player, u16 card)
 	{
 		if (!isPlayersTurn(player) || !playerHasCard(player, card))
 		{

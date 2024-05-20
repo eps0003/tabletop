@@ -12,6 +12,8 @@ class CardPlayCommand : ChatCommand
 	{
 		if (!isServer()) return;
 
+		string username = player.getUsername();
+
 		Game@ game = GameManager::get();
 
 		if (game is null)
@@ -20,7 +22,13 @@ class CardPlayCommand : ChatCommand
 			return;
 		}
 
-		if (!game.isPlayersTurn(player))
+		if (!game.isPlayerPlaying(username))
+		{
+			server_AddToChat(getTranslatedString("You are not playing in the game"), ConsoleColour::ERROR, player);
+			return;
+		}
+
+		if (!game.isPlayersTurn(username))
 		{
 			server_AddToChat(getTranslatedString("It is not currently your turn"), ConsoleColour::ERROR, player);
 			return;
@@ -34,13 +42,13 @@ class CardPlayCommand : ChatCommand
 
 		u16 card = parseInt(args[0]);
 
-		if (!game.playerHasCard(player, card))
+		if (!game.playerHasCard(username, card))
 		{
 			server_AddToChat(getTranslatedString("This card is not in your hand"), ConsoleColour::ERROR, player);
 			return;
 		};
 
-		if (!game.canPlayCard(player, card))
+		if (!game.canPlayCard(username, card))
 		{
 			server_AddToChat(getTranslatedString("You are unable to play this card"), ConsoleColour::ERROR, player);
 			return;
@@ -78,6 +86,6 @@ class CardPlayCommand : ChatCommand
 			}
 		}
 
-		game.PlayCard(player, card);
+		game.PlayCard(username, card);
 	}
 }

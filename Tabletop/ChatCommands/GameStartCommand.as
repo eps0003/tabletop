@@ -23,6 +23,13 @@ class GameStartCommand : ChatCommand
 		}
 
 		CPlayer@[] players = queue.remove(MAXIMUM_PLAYER_COUNT);
-		GameManager::Set(Game(players, OfficialRuleset()));
+
+		string[] usernames;
+		for (uint i = 0; i < players.size(); i++)
+		{
+			usernames.push_back(players[i].getUsername());
+		}
+
+		GameManager::Set(Game(usernames, OfficialRuleset()));
 	}
 }

@@ -4,12 +4,12 @@ class OfficialRuleset : Ruleset
 {
 	private u16 pickup = 0;
 
-	void OnStart(Game@ game, CPlayer@[] players)
+	void OnStart(Game@ game, string[] players)
 	{
 		print("Official ruleset");
 	}
 
-	void OnPlayCard(Game@ game, CPlayer@ player, u16 card)
+	void OnPlayCard(Game@ game, string player, u16 card)
 	{
 		if (Card::isValue(card, Card::Value::Reverse))
 		{
@@ -61,7 +61,7 @@ class OfficialRuleset : Ruleset
 		}
 	}
 
-	void OnDrawCard(Game@ game, CPlayer@ player, u16 card)
+	void OnDrawCard(Game@ game, string player, u16 card)
 	{
 		if (isServer())
 		{
@@ -87,7 +87,7 @@ class OfficialRuleset : Ruleset
 		}
 	}
 
-	bool canPlayCard(Game@ game, CPlayer@ player, u16 card)
+	bool canPlayCard(Game@ game, string player, u16 card)
 	{
 		if (pickup > 0)
 		{

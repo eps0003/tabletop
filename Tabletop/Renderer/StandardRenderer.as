@@ -35,12 +35,12 @@ void onCommand(CRules@ this, u8 cmd, CBitStream@ params)
 		u16 playerCount;
 		if (!params.saferead_u16(playerCount)) return;
 
-		CPlayer@[] players;
+		string[] players;
 
 		for (uint i = 0; i < playerCount; i++)
 		{
-			CPlayer@ player;
-			if (!saferead_player(params, @player)) return;
+			string player;
+			if (!params.saferead_string(player)) return;
 
 			players.push_back(player);
 		}
@@ -83,8 +83,8 @@ void onCommand(CRules@ this, u8 cmd, CBitStream@ params)
 		Game@ game = GameManager::get();
 		if (game is null) return;
 
-		CPlayer@ player;
-		if (!saferead_player(params, @player)) return;
+		string player;
+		if (!params.saferead_string(player)) return;
 
 		game.RemovePlayer(player);
 	}
@@ -124,8 +124,8 @@ void onCommand(CRules@ this, u8 cmd, CBitStream@ params)
 		Game@ game = GameManager::get();
 		if (game is null) return;
 
-		CPlayer@ player;
-		if (!saferead_player(params, @player)) return;
+		string player;
+		if (!params.saferead_string(player)) return;
 
 		u16 card;
 		if (!params.saferead_u16(card)) return;
@@ -138,13 +138,13 @@ void onCommand(CRules@ this, u8 cmd, CBitStream@ params)
 		Game@ game = GameManager::get();
 		if (game is null) return;
 
-		CPlayer@ player1;
-		if (!saferead_player(params, @player1)) return;
+		string player1;
+		if (!params.saferead_string(player1)) return;
 
-		CPlayer@ player2;
-		if (!saferead_player(params, @player2)) return;
+		string player2;
+		if (!params.saferead_string(player2)) return;
 
-		game.swapHands(player1, player2);
+		game.SwapHands(player1, player2);
 	}
 	else if (!isServer() && cmd == this.getCommandID("replenish draw pile"))
 	{
@@ -164,7 +164,7 @@ void onRender(CRules@ this)
 
 	uint yIndex = 0;
 
-	GUI::DrawText("Turn: " + game.getTurnPlayer().getUsername(), Vec2f(10, 10 + 15 * yIndex++), color_white);
+	GUI::DrawText("Turn: " + game.getTurnPlayer(), Vec2f(10, 10 + 15 * yIndex++), color_white);
 
 	yIndex++;
 
@@ -173,15 +173,15 @@ void onRender(CRules@ this)
 
 	yIndex++;
 
-	CPlayer@[] players = game.getPlayers();
+	string[] players = game.getPlayers();
 	for (uint i = 0; i < players.size(); i++)
 	{
-		CPlayer@ player = players[i];
+		string player = players[i];
 
 		u16[] hand;
 		game.getHand(player, hand);
 
-		GUI::DrawText(player.getUsername() + ": " + stringifyCards(hand), Vec2f(10, 10 + 15 * yIndex++), color_white);
+		GUI::DrawText(player + ": " + stringifyCards(hand), Vec2f(10, 10 + 15 * yIndex++), color_white);
 	}
 }
 
@@ -213,7 +213,7 @@ void Render(int id)
 	DrawPile(game.getDiscardPile(), screenCenter + Vec2f(60, -100));
 
 	u16[] hand;
-	if (game.getHand(getLocalPlayer(), hand))
+	if (game.getHand(getLocalPlayer().getUsername(), hand))
 	{
 		DrawHand(hand, screenCenter + Vec2f(0, 100));
 	}

@@ -36,17 +36,17 @@ void onInit(CRules@ this)
 void onNewPlayerJoin(CRules@ this, CPlayer@ player)
 {
 	Game@ game = GameManager::get();
-	if (game !is null)
-	{
-		game.Sync(player);
-	}
+	if (game is null) return;
+
+	game.Sync(player);
 }
 
 void onPlayerLeave(CRules@ this, CPlayer@ player)
 {
+	if (!isServer()) return;
+
 	Game@ game = GameManager::get();
-	if (game !is null)
-	{
-		game.RemovePlayer(player, false);
-	}
+	if (game is null) return;
+
+	game.RemovePlayer(player.getUsername());
 }

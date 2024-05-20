@@ -11,6 +11,8 @@ class CardDrawCommand : ChatCommand
 	{
 		if (!isServer()) return;
 
+		string username = player.getUsername();
+
 		Game@ game = GameManager::get();
 
 		if (game is null)
@@ -19,7 +21,13 @@ class CardDrawCommand : ChatCommand
 			return;
 		}
 
-		if (!game.isPlayersTurn(player))
+		if (!game.isPlayerPlaying(username))
+		{
+			server_AddToChat(getTranslatedString("You are not playing in the game"), ConsoleColour::ERROR, player);
+			return;
+		}
+
+		if (!game.isPlayersTurn(username))
 		{
 			server_AddToChat(getTranslatedString("It is not currently your turn"), ConsoleColour::ERROR, player);
 			return;

@@ -4,7 +4,7 @@ class CardPlay : RenderState
 {
 	private Game@ game;
 
-	private CPlayer@ player;
+	private string player;
 	private u16 card;
 
 	private dictionary@ renderCards;
@@ -28,10 +28,10 @@ class CardPlay : RenderState
 		}
 	}
 
-	CardPlay(Game@ game, dictionary@ renderCards, CPlayer@ player, u16 card)
+	CardPlay(Game@ game, dictionary@ renderCards, string player, u16 card)
 	{
 		@this.game = game;
-		@this.player = player;
+		this.player = player;
 		this.card = card;
 		renderCards.get("" + Card::clean(card), @renderCard);
 	}
