@@ -1,16 +1,16 @@
 #include "RenderState.as"
 
-class GameStart : RenderState
+class TurnNext : RenderState
 {
 	private Game@ game;
 
-	GameStart(Game@ game)
+	TurnNext(Game@ game)
 	{
 		@this.game = game;
 	}
 
 	void Start()
 	{
-		GameManager::Set(game);
+		game.NextTurn();
 	}
 }

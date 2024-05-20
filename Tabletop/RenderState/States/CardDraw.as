@@ -3,9 +3,10 @@
 class CardDraw : RenderState
 {
 	private Game@ game;
-	private dictionary@ renderCards;
 
 	private u16 card;
+
+	private dictionary@ renderCards;
 	private RenderCard@ renderCard;
 	private RenderCard renderCardStart;
 
@@ -20,9 +21,9 @@ class CardDraw : RenderState
 				return 0.0f;
 			}
 
-			float duration = getTicksASecond() * 1.0f; // 1 second
+			float duration = getTicksASecond() * 0.4f; // 1 second
 			float t = Maths::Clamp01((getGameTime() - gameTime) / duration);
-			return 1 - Maths::Pow(1 - t, 5); // Ease out
+			return 1 - Maths::Pow(1 - t, 2); // Ease out
 		}
 	}
 
@@ -38,7 +39,7 @@ class CardDraw : RenderState
 		card = game.drawCard();
 
 		// Get the rendered card
-		renderCards.get("" + card, @renderCard);
+		renderCards.get("" + Card::clean(card), @renderCard);
 
 		// Copy the current state of the rendered card
 		renderCardStart = renderCard;

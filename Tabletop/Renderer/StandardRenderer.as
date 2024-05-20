@@ -3,6 +3,9 @@
 #include "RenderManager.as"
 #include "GameStart.as"
 #include "CardDraw.as"
+#include "CardPlay.as"
+#include "TurnNext.as"
+#include "TurnSkip.as"
 
 #define CLIENT_ONLY
 
@@ -90,14 +93,16 @@ void onCommand(CRules@ this, u8 cmd, CBitStream@ params)
 		Game@ game = GameManager::get();
 		if (game is null) return;
 
-		game.NextTurn();
+		RenderState@ state = TurnNext(game);
+		renderManager.Add(state);
 	}
 	else if (!isServer() && cmd == this.getCommandID("skip turn"))
 	{
 		Game@ game = GameManager::get();
 		if (game is null) return;
 
-		game.SkipTurn();
+		RenderState@ state = TurnSkip(game);
+		renderManager.Add(state);
 	}
 	else if (!isServer() && cmd == this.getCommandID("reverse direction"))
 	{
@@ -125,7 +130,8 @@ void onCommand(CRules@ this, u8 cmd, CBitStream@ params)
 		u16 card;
 		if (!params.saferead_u16(card)) return;
 
-		game.PlayCard(player, card);
+		RenderState@ state = CardPlay(game, renderCards, player, card);
+		renderManager.Add(state);
 	}
 	else if (!isServer() && cmd == this.getCommandID("swap hands"))
 	{
