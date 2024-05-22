@@ -1,37 +1,24 @@
 #include "RenderState.as"
+#include "LerpTimer.as"
 
-class CardPlay : RenderState
+class CardLerp : RenderState
 {
 	private Game@ game;
-	private LerpTimer@ timer;
-
-	private string player;
-	private u16 card;
-
-	private dictionary@ renderCards;
 	private RenderCard@ renderCard;
 	private RenderCard renderCardStart;
+	private LerpTimer@ timer;
 
-	CardPlay(Game@ game, dictionary@ renderCards, string player, u16 card)
+	CardLerp(Game@ game, RenderCard@ renderCard)
 	{
 		@this.game = game;
-		this.player = player;
-		this.card = card;
-		renderCards.get("" + Card::clean(card), @renderCard);
+		@this.renderCard = renderCard;
 		@timer = LerpTimer(0.4f);
 	}
 
 	void Start()
 	{
-		game.PlayCard(player, card);
-
-		// Copy the current state of the rendered card
 		renderCardStart = renderCard;
-
-		// Hide the rendered card during the animation
 		renderCard.Hide();
-
-		// Start the timer
 		timer.Start();
 	}
 
@@ -39,6 +26,7 @@ class CardPlay : RenderState
 	{
 		float time = 1 - Maths::Pow(1 - timer.getTime(), 2); // Ease out
 
+		u16 card = renderCard.getCard();
 		Vec2f position = Vec2f_lerp(renderCardStart.getPosition(), renderCard.getPosition(), time);
 		float angle = renderCard.getAngle(); // TODO
 		Vec2f scale = Vec2f_lerp(renderCardStart.getScale(), renderCard.getScale(), time);

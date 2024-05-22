@@ -4,13 +4,18 @@ class RenderCard
 
 	private Vec2f position = Vec2f_zero;
 	private float angle = 0.0f;
-	private float scale = 1.0f;
+	private Vec2f scale = Vec2f_zero;
 
 	private bool visible = true;
 
 	RenderCard(u16 card)
 	{
 		this.card = card;
+	}
+
+	u16 getCard()
+	{
+		return card;
 	}
 
 	void SetPosition(Vec2f position)
@@ -33,12 +38,12 @@ class RenderCard
 		return angle;
 	}
 
-	void SetScale(float scale)
+	void SetScale(Vec2f scale)
 	{
 		this.scale = scale;
 	}
 
-	float getScale()
+	Vec2f getScale()
 	{
 		return scale;
 	}

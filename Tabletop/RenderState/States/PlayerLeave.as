@@ -61,7 +61,7 @@ class PlayerLeave : RenderState
 
 			Vec2f position = Vec2f_lerp(renderCardStart.getPosition(), renderCard.getPosition(), time);
 			float angle = renderCard.getAngle(); // TODO
-			float scale = Maths::Lerp(renderCardStart.getScale(), renderCard.getScale(), time);
+			Vec2f scale = Vec2f_lerp(renderCardStart.getScale(), renderCard.getScale(), time);
 
 			DrawCard(hand[i], position, angle, scale);
 		}
