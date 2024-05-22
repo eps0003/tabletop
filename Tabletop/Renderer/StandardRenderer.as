@@ -22,8 +22,8 @@ void onInit(CRules@ this)
 {
 	Render::addScript(Render::layer_prehud, getCurrentScriptName(), "Render", 0);
 
-    Vec2f offset = Vec2f(-2.5, -2.5) * cl_mouse_scale;
-    getHUD().SetCursorOffset(offset);
+	Vec2f offset = Vec2f(-2.5, -2.5) * cl_mouse_scale;
+	getHUD().SetCursorOffset(offset);
 }
 
 void onCommand(CRules@ this, u8 cmd, CBitStream@ params)
@@ -384,14 +384,14 @@ bool isMouseOverCard(Vec2f position, float angle, float scale)
 	// Translate the point into the local coordinate system of the OBB
 	Vec2f mousePos = getControls().getInterpMouseScreenPos() - position;
 
-    // Rotate the translated point by the negative angle of rotation of the OBB
+	// Rotate the translated point by the negative angle of rotation of the OBB
 	float radians = toRadians(-angle);
 	float sin = Maths::Sin(radians);
 	float cos = Maths::Cos(radians);
-    float rotatedX = mousePos.x * cos - mousePos.y * sin;
-    float rotatedY = mousePos.x * sin + mousePos.y * cos;
+	float rotatedX = mousePos.x * cos - mousePos.y * sin;
+	float rotatedY = mousePos.x * sin + mousePos.y * cos;
 
-    // Check if the rotated point lies within the bounds of the OBB
+	// Check if the rotated point lies within the bounds of the OBB
 	return (
 		Maths::Abs(rotatedX) <= cardSize.x * 0.5f &&
 		Maths::Abs(rotatedY) <= cardSize.y * 0.5f

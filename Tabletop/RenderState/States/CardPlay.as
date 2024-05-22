@@ -14,7 +14,7 @@ class CardPlay : RenderState
 	private uint gameTime = 0.0f;
 
 	private float time
-    {
+	{
 		get const
 		{
 			if (gameTime == 0.0f)
