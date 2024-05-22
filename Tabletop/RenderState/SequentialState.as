@@ -3,19 +3,16 @@
 class SequentialState : RenderState
 {
 	private RenderState@[] states;
-	private bool[] started;
-	private uint index = 0;
+	private bool started = false;
 
 	SequentialState(RenderState@[] states)
 	{
 		this.states = states;
-		started = array<bool>(states.size(), false);
 	}
 
 	SequentialState@ Add(RenderState@ state)
 	{
 		states.push_back(state);
-		started.push_back(false);
 		return this;
 	}
 
@@ -23,25 +20,43 @@ class SequentialState : RenderState
 	{
 		if (isComplete()) return;
 
-		RenderState@ state = states[index];
+		RenderState@ state = states[0];
 
-		if (!started[index])
+		// Start state
+		if (!started)
 		{
-			started[index] = true;
 			state.Start();
+
+			// Immediately end state
+			if (state.isComplete())
+			{
+				state.End();
+				states.removeAt(0);
+
+				// Process the next state this frame
+				Render();
+				return;
+			}
+
+			started = true;
 		}
 
 		state.Render();
 
+		// End state
 		if (state.isComplete())
 		{
 			state.End();
-			index++;
+			states.removeAt(0);
+			started = false;
+
+			// Process the next state this frame
+			Render();
 		}
 	}
 
 	bool isComplete()
 	{
-		return index >= states.size();
+		return states.empty();
 	}
 }
