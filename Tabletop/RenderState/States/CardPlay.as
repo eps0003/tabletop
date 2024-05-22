@@ -3,6 +3,7 @@
 class CardPlay : RenderState
 {
 	private Game@ game;
+	private LerpTimer@ timer;
 
 	private string player;
 	private u16 card;
@@ -11,29 +12,13 @@ class CardPlay : RenderState
 	private RenderCard@ renderCard;
 	private RenderCard renderCardStart;
 
-	private uint gameTime = 0.0f;
-
-	private float time
-	{
-		get const
-		{
-			if (gameTime == 0.0f)
-			{
-				return 0.0f;
-			}
-
-			float duration = getTicksASecond() * 0.4f; // 1 second
-			float t = Maths::Clamp01((getGameTime() - gameTime) / duration);
-			return 1 - Maths::Pow(1 - t, 2); // Ease out
-		}
-	}
-
 	CardPlay(Game@ game, dictionary@ renderCards, string player, u16 card)
 	{
 		@this.game = game;
 		this.player = player;
 		this.card = card;
 		renderCards.get("" + Card::clean(card), @renderCard);
+		@timer = LerpTimer(0.4f);
 	}
 
 	void Start()
@@ -46,12 +31,14 @@ class CardPlay : RenderState
 		// Hide the rendered card during the animation
 		renderCard.Hide();
 
-		// Store the current game time
-		gameTime = getGameTime();
+		// Start the timer
+		timer.Start();
 	}
 
 	void Render()
 	{
+		float time = 1 - Maths::Pow(1 - timer.getTime(), 2); // Ease out
+
 		Vec2f position = Vec2f_lerp(renderCardStart.getPosition(), renderCard.getPosition(), time);
 		float angle = renderCard.getAngle(); // TODO
 		float scale = Maths::Lerp(renderCardStart.getScale(), renderCard.getScale(), time);
@@ -66,6 +53,6 @@ class CardPlay : RenderState
 
 	bool isComplete()
 	{
-		return time >= 1.0f;
+		return timer.isComplete();
 	}
 }

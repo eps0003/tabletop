@@ -3,6 +3,7 @@
 class PlayerLeave : RenderState
 {
 	private Game@ game;
+	private LerpTimer@ timer;
 
 	private string player;
 	private u16[] hand;
@@ -11,28 +12,12 @@ class PlayerLeave : RenderState
 	private RenderCard@[] handRenderCards;
 	private RenderCard[] renderCardsStart;
 
-	private uint gameTime = 0.0f;
-
-	private float time
-	{
-		get const
-		{
-			if (gameTime == 0.0f)
-			{
-				return 0.0f;
-			}
-
-			float duration = getTicksASecond() * 0.4f; // 1 second
-			float t = Maths::Clamp01((getGameTime() - gameTime) / duration);
-			return 1 - Maths::Pow(1 - t, 2); // Ease out
-		}
-	}
-
 	PlayerLeave(Game@ game, dictionary@ renderCards, string player)
 	{
 		@this.game = game;
 		@this.renderCards = renderCards;
 		this.player = player;
+		@timer = LerpTimer(0.4f);
 	}
 
 	void Start()
@@ -61,12 +46,14 @@ class PlayerLeave : RenderState
 			renderCard.Hide();
 		}
 
-		// Store the current game time
-		gameTime = getGameTime();
+		// Start the timer
+		timer.Start();
 	}
 
 	void Render()
 	{
+		float time = 1 - Maths::Pow(1 - timer.getTime(), 2); // Ease out
+
 		for (uint i = 0; i < handRenderCards.size(); i++)
 		{
 			RenderCard renderCardStart = renderCardsStart[i];
@@ -90,6 +77,6 @@ class PlayerLeave : RenderState
 
 	bool isComplete()
 	{
-		return time >= 1.0f;
+		return timer.isComplete();
 	}
 }
